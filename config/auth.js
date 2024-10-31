@@ -1,5 +1,5 @@
 // config/auth.js
 module.exports = {
-    apikey: '<YOUR_ALIGO_API_KEY>',
-    userid: '<YOUR_USER_ID>'
+    apikey: '5ubrzqru6apqx8qakmxz17la52gf0zhz',
+    userid: 'jejumiso'
 };
