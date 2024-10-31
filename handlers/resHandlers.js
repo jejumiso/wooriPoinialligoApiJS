@@ -6,7 +6,7 @@ const key = 'E4rqzxa37VCwz7I/enrUy1S/xwH6BR==';
 const iv = 'Hkald6&ksl#usk9@';
 
 
-import { encryptData, decryptData } from '../utils/encryption.js';
+const { encryptData, decryptData } = require('../utils/encryption.js');
 
 const resEncoDeco = (req, res) => {
     const { oriText, resText } = req.body; // req.body에서 ori와 res를 추출
