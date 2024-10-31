@@ -1,0 +1,16 @@
+{
+  "name": "aligo-api-server",
+  "version": "1.0.0",
+  "description": "A server to interface with Aligo API for 카페24",
+  "main": "web.js",
+  "scripts": {
+    "start": "node web.js"
+  },
+  "dependencies": {
+    "express": "^4.17.1",
+    "aligoapi": "^1.0.0",
+    "body-parser": "^1.19.0"
+  },
+  "author": "",
+  "license": "ISC"
+}
