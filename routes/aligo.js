@@ -18,6 +18,10 @@ const {
     kakaoCancel
 } = require('../handlers/aligoHandlers');
 
+const {
+    resEncoDeco
+} = require('../handlers/resHandlers');
+
 // API 경로와 핸들러 함수 연결
 router.post('/profileAuth', profileAuth);
 router.get('/profileCategory', profileCategory);
@@ -33,5 +37,7 @@ router.get('/historyList', historyList);
 router.get('/historyDetail', historyDetail);
 router.get('/kakaoRemain', kakaoRemain);
 router.post('/kakaoCancel', kakaoCancel);
+
+router.post('/resEncoDeco', resEncoDeco);
 
 module.exports = router;
