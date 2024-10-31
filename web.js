@@ -6,10 +6,10 @@ const aligoRoutes = require('./routes/aligo');
 const app = express();
 const PORT = 8001;
 
-// JSON 파싱을 위한 body-parser 설정
+// JSON 요청 파싱을 위한 body-parser 설정
 app.use(bodyParser.json());
 
-// 알리고 API 라우트 등록
+// 알리고 API 경로 설정
 app.use('/api/aligo', aligoRoutes);
 
 // 서버 시작
