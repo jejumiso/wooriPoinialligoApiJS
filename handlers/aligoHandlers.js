@@ -67,15 +67,7 @@ const templateRequest = (req, res) => {
 
 const alimtalkSend = async (req, res) => {
     try {
-        const response = await new Promise((resolve, reject) => {
-            aligoapi.alimtalkSend(req, AuthData, (error, response) => {
-                if (error) {
-                    reject(error);
-                } else {
-                    resolve(response);
-                }
-            });
-        });
+        const response = await aligoapi.alimtalkSend(req, AuthData);
         res.status(200).send(response);
     } catch (error) {
         console.error("알림톡 전송 오류:", error);
@@ -85,7 +77,6 @@ const alimtalkSend = async (req, res) => {
         });
     }
 };
-
 
 
 // 전송결과보기
