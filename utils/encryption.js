@@ -31,7 +31,7 @@ function decryptData(encryptedText, key, iv) {
     while (base64.length % 4 !== 0) {
         base64 += '=';
     }
-    console.log('base64 : ' + base64)
+    // console.log('base64 : ' + base64)
 
     try {
         const decrypted = CryptoJS.AES.decrypt(base64, decryptionKey, {
