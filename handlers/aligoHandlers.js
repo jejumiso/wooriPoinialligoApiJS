@@ -68,9 +68,18 @@ const templateRequest = (req, res) => {
 // 알림톡 전송
 const alimtalkSend = (req, res) => {
     aligoapi.alimtalkSend(req, AuthData)
-        .then((r) => res.send(r))
-        .catch((e) => res.send(e));
+        .then((response) => {
+            res.status(200).send(response);  // 성공 응답
+        })
+        .catch((error) => {
+            console.error("알림톡 전송 오류:", error);  // 오류 로깅
+            res.status(500).send({
+                message: "알림톡 전송 중 오류가 발생했습니다. 다시 시도해 주세요.",
+                error: error.message || error  // 사용자에게 기본 메시지와 함께 오류 정보 제공
+            });
+        });
 };
+
 
 // 전송결과보기
 const historyList = (req, res) => {
