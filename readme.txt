@@ -1,3 +1,5 @@
+빌드시 node버전 14로 꼭 바꿔주기
+
 git rm -r --cached node_modules
 git commit -m "Remove node_modules from repository"
 git push cafe24 master

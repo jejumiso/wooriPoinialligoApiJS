@@ -24,18 +24,18 @@ const {
 
 // API 경로와 핸들러 함수 연결
 router.post('/profileAuth', profileAuth);
-router.get('/profileCategory', profileCategory);
+router.post('/profileCategory', profileCategory);
 router.post('/profileAdd', profileAdd);
-router.get('/friendList', friendList);
-router.get('/templateList', templateList);
+router.post('/friendList', friendList);
+router.post('/templateList', templateList);
 router.post('/templateAdd', templateAdd);
 router.post('/templateModify', templateModify);
 router.post('/templateDel', templateDel);
 router.post('/templateRequest', templateRequest);
 router.post('/alimtalkSend', alimtalkSend);
-router.get('/historyList', historyList);
-router.get('/historyDetail', historyDetail);
-router.get('/kakaoRemain', kakaoRemain);
+router.post('/historyList', historyList);
+router.post('/historyDetail', historyDetail);
+router.post('/kakaoRemain', kakaoRemain);
 router.post('/kakaoCancel', kakaoCancel);
 
 router.post('/resEncoDeco', resEncoDeco);
