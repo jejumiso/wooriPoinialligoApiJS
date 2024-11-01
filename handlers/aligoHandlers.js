@@ -65,39 +65,27 @@ const templateRequest = (req, res) => {
         .catch((e) => res.send(e));
 };
 
-const alimtalkSend = (req, res) => {
-    const { button_1 } = req.body;
-
-    // button_1이 배열인 경우와 객체인 경우 모두 처리 가능하게 설정
-    if (Array.isArray(button_1)) {
-        // 배열을 각각의 버튼 객체로 처리하는 로직 추가
-        button_1.forEach(button => {
-            // 각 버튼에 필요한 데이터가 있는지 확인하고 처리
-            if (button.name && button.linkType) {
-                // 버튼 처리 로직 (예시)
-                console.log(`버튼 이름: ${button.name}, 링크 타입: ${button.linkType}`);
-            }
-        });
-    } else if (button_1 && typeof button_1 === "object") {
-        // 단일 객체로 전송된 경우의 처리
-        console.log(`버튼 이름: ${button_1.name}, 링크 타입: ${button_1.linkType}`);
-    } else {
-        return res.status(400).send({ message: "button_1 형식이 잘못되었습니다." });
-    }
-
-    // 이후 알림톡 전송 프로세스 로직
-    aligoapi.alimtalkSend(req, AuthData)
-        .then((response) => {
-            res.status(200).send(response);  // 성공 응답
-        })
-        .catch((error) => {
-            console.error("알림톡 전송 오류:", error);  // 오류 로깅
-            res.status(500).send({
-                message: "알림톡 전송 중 오류가 발생했습니다. 다시 시도해 주세요.",
-                error: error.message || error  // 사용자에게 기본 메시지와 함께 오류 정보 제공
+const alimtalkSend = async (req, res) => {
+    try {
+        const response = await new Promise((resolve, reject) => {
+            aligoapi.alimtalkSend(req, AuthData, (error, response) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve(response);
+                }
             });
         });
+        res.status(200).send(response);
+    } catch (error) {
+        console.error("알림톡 전송 오류:", error);
+        res.status(500).send({
+            message: "알림톡 전송 중 오류가 발생했습니다. 다시 시도해 주세요.",
+            error: error.message || error
+        });
+    }
 };
+
 
 
 // 전송결과보기
