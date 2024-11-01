@@ -2,8 +2,8 @@
 const aligoapi = require('aligoapi');
 const AuthData = require('../config/auth');
 
-const key = 'erpttreR3NchlK/+omP385IphCL3LbSQuz+UsnSCLyM=';
-const iv = 'zLgaae0Wysw6PO8yi5Gnug==';
+const key = 'QRvUJwa5cIubaa9QHLahkizjCNyKfC76';
+const iv = 'QU83jDdX2PrZNL7k';
 
 
 const { encryptData, decryptData } = require('../utils/encryption.js');
