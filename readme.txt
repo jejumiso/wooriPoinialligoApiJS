@@ -4,6 +4,9 @@ git rm -r --cached node_modules
 git commit -m "Remove node_modules from repository"
 git push cafe24 master
 
+카페24 빌드할때
+핫스팟키고 하기 핸드폰의 와이파이도 꺼져있어야함..
+
 
 
 카페24 게시에 시간이 많이 소요돔.
