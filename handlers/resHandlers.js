@@ -2,8 +2,8 @@
 const aligoapi = require('aligoapi');
 const AuthData = require('../config/auth');
 
-const key = 'E4rqzxa37VCwz7I/enrUy1S/xwH6BR==';
-const iv = 'Hkald6&ksl#usk9@';
+const key = 'erpttreR3NchlK/+omP385IphCL3LbSQuz+UsnSCLyM=';
+const iv = 'zLgaae0Wysw6PO8yi5Gnug==';
 
 
 const { encryptData, decryptData } = require('../utils/encryption.js');
@@ -14,6 +14,7 @@ const resEncoDeco = (req, res) => {
     const resultResFromOri = encryptData(oriText, key, iv);
 
 
+
     // 복호화
     const resultOriFromRes = decryptData(resText, key, iv);
 
@@ -21,6 +22,7 @@ const resEncoDeco = (req, res) => {
     res.json({
         resultResFromOri,
         resultOriFromRes,
+        "asdf": 3
     });
 
 };
