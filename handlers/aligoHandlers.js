@@ -67,11 +67,11 @@ const templateRequest = (req, res) => {
 
 const alimtalkSend = async (req, res) => {
     try {
-        const currentTime = new Date().toISOString(); // ISO 형식의 현재 시간
-        console.log(`[${currentTime}] Request Data: ${JSON.stringify(req)}`);
-        console.log(`[${currentTime}] Request Data: ${JSON.stringify(req)}`);
-        console.log(`[${currentTime}] Request Data: ${JSON.stringify(req)}`);
-        console.log(`[${currentTime}] Request Data: ${JSON.stringify(req)}`);
+        const currentTime = new Date().toISOString();
+        console.log(`[${currentTime}] Request Data: ${JSON.stringify(req.body)}`);
+        console.log(`[${currentTime}] Request Data: ${JSON.stringify(req.body)}`);
+        console.log(`[${currentTime}] Request Data: ${JSON.stringify(req.body)}`);
+        console.log(`[${currentTime}] Request Data: ${JSON.stringify(req.body)}`);
 
         const response = await aligoapi.alimtalkSend(req, AuthData);
         res.status(200).send(response);
