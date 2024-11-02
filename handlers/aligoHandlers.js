@@ -67,6 +67,11 @@ const templateRequest = (req, res) => {
 
 const alimtalkSend = async (req, res) => {
     try {
+
+        console.log(JSON.stringify(req))
+        console.log(JSON.stringify(req))
+        console.log(JSON.stringify(req))
+
         const response = await aligoapi.alimtalkSend(req, AuthData);
         res.status(200).send(response);
     } catch (error) {
