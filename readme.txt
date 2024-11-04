@@ -35,3 +35,24 @@ push할때 비번 누르라고 함..
 저려함고
 고정ip이고
 api수정할일은 별로 없기에..(보안상 키수정정도...)
+
+
+
+
+
+
+
+
+https 에 관하여
+1. 카페24 nodejs호스팅은 https제공이 안됨
+
+방안 a. aws등을 이용을 생각해봤지만
+대부분 어차피 유료이고 무료라 하더라도 고정ip가 안됨.
+유료이면서 고정ip가 있을 수 있지만 굳이 유료라면
+단순한 api를 옮기면서까지 할 필요는 없을드
+
+결정 : 카페24의 nodejs호스팅을 그대로 이용하고
+저렴한 도메인을 구매하고(wooripointkakaoallimapi.store)
+Cloudflare 를 통해 wooripointkakaoallimapi.store를 https서비슷 받는다
+wooripointkakaoallimapi.store의 네임서버를 cloudflare로 바꾸고고
+cloudflare 에서 카페24를 가리키게 하면 되는것 같다.
