@@ -10,6 +10,8 @@ const PORT = 8001;
 // CORS 설정: 모든 도메인에서의 요청 허용
 app.use(cors());
 
+app.options('*', cors()); // 모든 OPTIONS 요청 허용
+
 // JSON 요청 파싱 설정
 app.use(bodyParser.json());
 
