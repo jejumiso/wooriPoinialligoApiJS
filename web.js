@@ -18,7 +18,7 @@ app.use(bodyParser.urlencoded({ extended: true })); // URL-encoded 요청도 허
 app.all("/proxy/*", async (req, res) => {
     try {
         // 프록시 대상 URL 생성
-        const targetUrl = "http://wooripoint.cafe24.com" + req.originalUrl.replace("/proxy", "");
+        const targetUrl = "http://kakakoalligoapi.cafe24.com" + req.originalUrl.replace("/proxy", "");
         console.log(`Proxying request to: ${targetUrl}`);
 
         // Axios를 사용하여 요청 전달
