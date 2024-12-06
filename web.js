@@ -1,46 +1,38 @@
-// web.js
 const express = require('express');
 const bodyParser = require('body-parser');
-const cors = require('cors'); // CORS 미들웨어 추가
-const axios = require('axios'); // axios 추가
+const cors = require('cors');
+const axios = require('axios');
 
 const app = express();
 const PORT = 8001;
 
-// CORS 설정: 모든 도메인에서의 요청 허용
-app.use(cors());
+// CORS 설정
+app.use(cors({
+    origin: '*', // 모든 도메인 허용 (필요시 특정 도메인으로 제한 가능)
+    methods: ['GET', 'POST', 'OPTIONS', 'PUT', 'DELETE'], // 허용할 HTTP 메서드
+    allowedHeaders: ['Content-Type', 'Authorization'], // 허용할 헤더
+}));
 
-// JSON 요청 파싱 설정
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true })); // URL-encoded 요청도 허용
+app.options('*', cors()); // 모든 OPTIONS 요청 허용
 
-// 프록시 엔드포인트
-app.all("/proxy/*", async (req, res) => {
+// 프록시 처리
+app.all('/proxy/*', async (req, res) => {
     try {
-        // 프록시 대상 URL 생성
-        const targetUrl = "http://kakakoalligoapi.cafe24.com" + req.originalUrl.replace("/proxy", "");
-        console.log(`Proxying request to: ${targetUrl}`);
-
-        // Axios를 사용하여 요청 전달
+        const targetUrl = req.originalUrl.replace('/proxy', 'http://wooripoint.cafe24.com');
         const response = await axios({
             method: req.method,
             url: targetUrl,
             data: req.body,
-            headers: {
-                ...req.headers,
-                host: undefined, // 호스트 헤더 제거 (필요 시 추가)
-            },
+            headers: { ...req.headers, host: undefined }, // Host 헤더 제거
         });
-
-        // 클라이언트에 응답 전달
         res.status(response.status).send(response.data);
     } catch (error) {
-        console.error(`Error proxying request: ${error.message}`);
-        res.status(500).send({ error: 'Proxy error', message: error.message });
+        console.error('프록시 요청 중 오류:', error.message);
+        res.status(error.response?.status || 500).send(error.message);
     }
 });
 
-// 서버 시작
+app.use(bodyParser.json());
 app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
+    console.log(`프록시 서버가 http://localhost:${PORT}에서 실행 중입니다.`);
 });
