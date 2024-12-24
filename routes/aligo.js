@@ -21,6 +21,7 @@ const {
 const {
     resEncoDeco
 } = require('../handlers/resHandlers');
+const { requestUserToken } = require('../handlers/bootpayHandlers');
 
 // API 경로와 핸들러 함수 연결
 router.post('/profileAuth', profileAuth);
@@ -39,5 +40,7 @@ router.post('/kakaoRemain', kakaoRemain);
 router.post('/kakaoCancel', kakaoCancel);
 
 router.post('/resEncoDeco', resEncoDeco);
+
+router.post('/requestUserToken', requestUserToken);
 
 module.exports = router;
