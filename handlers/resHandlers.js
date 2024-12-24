@@ -12,6 +12,11 @@ const resEncoDeco = (req, res) => {
     const { oriText, resText } = req.body; // req.body에서 ori와 res를 추출
     // 암호화
     const resultResFromOri = encryptData(oriText, key, iv);
+    // 1. base64 인코딩
+    const base64Encoded = Buffer.from(resultResFromOri).toString('base64');
+    // 2. URL에 안전하게 포함하기 위해 encodeURIComponent 적용
+    const encodeURIResIdCompany = encodeURIComponent(base64Encoded);
+
 
 
 
@@ -20,9 +25,9 @@ const resEncoDeco = (req, res) => {
 
     // 결과물을 JSON 응답으로 반환
     res.json({
-        resultResFromOri,
-        resultOriFromRes,
-        "asdf": 3
+        "from_ori": { "result_res": resultResFromOri, "result_url": encodeURIResIdCompany },
+        "from_res": { "result": resultOriFromRes },
+        "asdf": 311123
     });
 
 };
