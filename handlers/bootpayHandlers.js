@@ -23,7 +23,7 @@ exports.requestUserToken = async (req, res) => {
                 private_key = "Gu35HLZCQ8Sqj7QAVZSXWESGNgbx6jG2TOIQqFIVh6A=";
             }
         }
-        if (topping - up == "cafebombomjejunamwon") {
+        if (companyId == "topping-up") {
             if (isReal) {
                 application_id = "67a26d0d4fb27baaf86e5592";
                 private_key = "WASa2Rmp2YasnAfJ7V75Ay1n2S3yFapZlBV+liEiGkM=";
