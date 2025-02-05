@@ -25,11 +25,11 @@ exports.requestUserToken = async (req, res) => {
         }
         if (companyId == "topping-up") {
             if (isReal) {
-                application_id = "67a26d0d4fb27baaf86e5592";
-                private_key = "WASa2Rmp2YasnAfJ7V75Ay1n2S3yFapZlBV+liEiGkM=";
+                application_id = "6760f9414fb27baaf86e522d";
+                private_key = "pzWm9qcLC/HfHV71/PdDfloRKiuxjZhEYMT9Qol33H0=";
             } else {
-                application_id = "67a27319a3175898bd6e55f2";
-                private_key = "Gu35HLZCQ8Sqj7QAVZSXWESGNgbx6jG2TOIQqFIVh6A=";
+                application_id = "67a2815d692d0516c36e5578";
+                private_key = "WfOtF7Fn9RzM0hDK+T8OiHpyhvngazPbsd7LPlqGxMU=";
             }
         }
         //서버에서 갖고와야 하지만 임시... END
