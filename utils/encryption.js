@@ -14,10 +14,12 @@ function encryptData(text, key, iv) {
         padding: CryptoJS.pad.Pkcs7,
     });
 
-    // URL-safe Base64 변환
+    // Base64 변환 : 암호화 된 encrypted를 문자로 저장하면 자동으로 base64로 변환이 됨.
     let base64 = encrypted.toString();
-    let urlSafeBase64 = base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-    return urlSafeBase64;
+    return base64;
+
+    // let urlSafeBase64 = base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    // return urlSafeBase64;
 }
 
 // 복호화 함수
@@ -26,12 +28,10 @@ function decryptData(encryptedText, key, iv) {
     const decryptionKey = CryptoJS.enc.Utf8.parse(key);
     const decryptionIV = CryptoJS.enc.Utf8.parse(iv);
 
-    // URL-safe Base64를 일반 Base64로 변환
-    let base64 = encryptedText.replace(/-/g, '+').replace(/_/g, '/');
-    while (base64.length % 4 !== 0) {
-        base64 += '=';
-    }
-    // console.log('base64 : ' + base64)
+    // URL-safe Base64를 일반 Base64로 변환하고 끝의 '=' 패딩 제거
+    // 암호화 된 문자의 URL-safe화 된것도 같이 사용하기 위해.
+    let base64 = encryptedText.replace(/-/g, '+').replace(/_/g, '/').replace(/=+$/, '');
+    // URL-safe Base64를 일반 Base64로 변환 끝
 
     try {
         const decrypted = CryptoJS.AES.decrypt(base64, decryptionKey, {
