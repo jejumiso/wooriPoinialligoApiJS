@@ -39,9 +39,18 @@ const templateList = (req, res) => {
 
 // 템플릿 등록
 const templateAdd = (req, res) => {
+    console.log('Received templateAdd request:', req.body);  // 요청 데이터 확인
+
+
     aligoapi.templateAdd(req, AuthData)
-        .then((r) => res.send(r))
-        .catch((e) => res.send(e));
+        .then((r) => {
+            console.log('Response from aligoapi.templateAdd:', r);  // 응답 로그 출력
+            res.send(r);
+        })
+        .catch((e) => {
+            console.error('Error from aligoapi.templateAdd:', e);
+            res.send(e);
+        });
 };
 
 // 템플릿 수정
