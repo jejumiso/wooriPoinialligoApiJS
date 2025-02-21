@@ -18,5 +18,5 @@ app.use('/api/aligo', aligoRoutes);
 
 // 서버 시작
 app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
+    console.log(`Server is running on http://localhost:${PORT}  haha`);
 });
