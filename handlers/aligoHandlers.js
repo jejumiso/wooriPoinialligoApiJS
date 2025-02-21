@@ -129,16 +129,11 @@ const friendTalkSend = async (req, res) => {
     try {
         console.log("📢 [친구톡 발송 요청] Request Data:", req.body);
 
-        // const response = await aligoapi.friendTalkSend(req, AuthData);
+        // 실제 알리고 API 호출
+        const response = await aligoapi.friendTalkSend(req, AuthData);
 
-        // console.log("✅ [친구톡 발송 성공] Response Data:", response);
-        // res.status(200).send(response);
-
-        const response = { isSuccess: true, message: "테스트용 응답입니다. 실제 API 호출 없음." };
-
-        console.log("✅ [테스트] 친구톡 API 정상 호출됨.");
-
-        res.status(200).json(response);
+        console.log("✅ [친구톡 발송 성공] Response Data:", response);
+        res.status(200).send(response);
     } catch (error) {
         console.error("❌ [친구톡 발송 실패] Error:", error);
 
