@@ -126,22 +126,13 @@ const kakaoCancel = (req, res) => {
 ///아래는 새로 만드는거.. 사실상 새로 만드는것도 형식 같음..
 
 const friendTalkSend = async (req, res) => {
-    try {
-        const currentTime = new Date().toISOString();
-        console.log(`[${currentTime}] Request Data: ${JSON.stringify(req.body)}`);
-        console.log(`[${currentTime}] Request Data: ${JSON.stringify(req.body)}`);
-        console.log(`[${currentTime}] Request Data: ${JSON.stringify(req.body)}`);
-        console.log(`[${currentTime}] Request Data: ${JSON.stringify(req.body)}`);
-
-        const response = await aligoapi.friendTalkSend(req, AuthData);
-        res.status(200).send(response);
-    } catch (error) {
-        console.error("친구톡 전송 오류:", error);
-        res.status(500).send({
-            message: "친구톡 전송 중 오류가 발생했습니다. 다시 시도해 주세요.",
-            error: error.message || error
-        });
-    }
+    aligoapi.friendTalkSend(req, AuthData)
+        .then((r) => {
+            res.send(r)
+        })
+        .catch((e) => {
+            res.send(e)
+        })
 };
 
 
