@@ -19,9 +19,13 @@ const {
     friendTalkSend
 } = require('../handlers/aligoHandlers');
 
+
+
 const {
     resEncoDeco
 } = require('../handlers/resHandlers');
+
+
 const { requestUserToken } = require('../handlers/bootpayHandlers');
 
 // API 경로와 핸들러 함수 연결
@@ -35,14 +39,13 @@ router.post('/templateModify', templateModify);
 router.post('/templateDel', templateDel);
 router.post('/templateRequest', templateRequest);
 router.post('/alimtalkSend', alimtalkSend);
-router.post('/friendTalkSend', friendTalkSend);
 router.post('/historyList', historyList);
 router.post('/historyDetail', historyDetail);
 router.post('/kakaoRemain', kakaoRemain);
 router.post('/kakaoCancel', kakaoCancel);
+router.post('/friendTalkSend', friendTalkSend);
 
 router.post('/resEncoDeco', resEncoDeco);
-
 router.post('/requestUserToken', requestUserToken);
 
 module.exports = router;

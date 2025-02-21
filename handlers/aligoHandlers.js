@@ -129,7 +129,7 @@ const friendTalkSend = async (req, res) => {
     try {
         console.log("📢 [친구톡 발송 요청] Request Data:", req.body);
 
-        const response = await aligoapi.friendTalkSend(req, AuthData);
+        // const response = await aligoapi.friendTalkSend(req, AuthData);
 
         console.log("✅ [친구톡 발송 성공] Response Data:", response);
         res.status(200).send(response);
