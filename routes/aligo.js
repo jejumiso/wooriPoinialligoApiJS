@@ -34,6 +34,7 @@ router.post('/templateModify', templateModify);
 router.post('/templateDel', templateDel);
 router.post('/templateRequest', templateRequest);
 router.post('/alimtalkSend', alimtalkSend);
+router.post('/friendTalkSend', friendTalkSend);
 router.post('/historyList', historyList);
 router.post('/historyDetail', historyDetail);
 router.post('/kakaoRemain', kakaoRemain);
