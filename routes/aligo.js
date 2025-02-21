@@ -15,7 +15,8 @@ const {
     historyList,
     historyDetail,
     kakaoRemain,
-    kakaoCancel
+    kakaoCancel,
+    friendTalkSend
 } = require('../handlers/aligoHandlers');
 
 const {
