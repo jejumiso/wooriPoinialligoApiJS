@@ -159,5 +159,6 @@ module.exports = {
     historyList,
     historyDetail,
     kakaoRemain,
-    kakaoCancel
+    kakaoCancel,
+    friendTalkSend
 };
