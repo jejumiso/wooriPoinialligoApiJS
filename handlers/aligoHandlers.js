@@ -126,14 +126,24 @@ const kakaoCancel = (req, res) => {
 ///아래는 새로 만드는거.. 사실상 새로 만드는것도 형식 같음..
 
 const friendTalkSend = async (req, res) => {
-    aligoapi.friendTalkSend(req, AuthData)
-        .then((r) => {
-            res.send(r)
-        })
-        .catch((e) => {
-            res.send(e)
-        })
+    try {
+        console.log("📢 [친구톡 발송 요청] Request Data:", req.body);
+
+        const response = await aligoapi.friendTalkSend(req, AuthData);
+
+        console.log("✅ [친구톡 발송 성공] Response Data:", response);
+        res.status(200).send(response);
+    } catch (error) {
+        console.error("❌ [친구톡 발송 실패] Error:", error);
+
+        res.status(500).json({
+            isSuccess: false,
+            message: "친구톡 발송 중 오류가 발생했습니다.",
+            error: error.message || error
+        });
+    }
 };
+
 
 
 module.exports = {
