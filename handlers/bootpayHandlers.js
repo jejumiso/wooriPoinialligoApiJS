@@ -32,6 +32,10 @@ exports.requestUserToken = async (req, res) => {
                 private_key = "WfOtF7Fn9RzM0hDK+T8OiHpyhvngazPbsd7LPlqGxMU=";
             }
         }
+        if (companyId == "jerajune_duty_free") {
+            application_id = "67b5418986fd08d2213fcd55";
+            private_key = "x0sYAt86UH7IqJEKBDqlgKtubzn1lLPCsro3I98vdQ4=";
+        }
         //서버에서 갖고와야 하지만 임시... END
 
         // Bootpay 설정을 클라이언트로부터 받은 값으로 설정
