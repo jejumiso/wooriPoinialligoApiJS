@@ -42,7 +42,7 @@ exports.requestUserToken = async (req, res) => {
 
 
         if (companyId == "jerajune_duty_free") {
-            application_id = "67b5418986fd08d2213fcd55";
+            application_id = "67b5418986fd08d2213fcd58";
             private_key = "x0sYAt86UH7IqJEKBDqlgKtubzn1lLPCsro3I98vdQ4=";
         }
 
