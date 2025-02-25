@@ -10,6 +10,9 @@ exports.requestUserToken = async (req, res) => {
             isReal,
             user_id, email, phone, username, gender, birth } = req.body;
 
+
+        console.log("간변비밀번호 token발행 시작   companyId : " + companyId);
+
         var application_id = "";
         var private_key = "";
         //서버에서 갖고와야 하지만 임시...
@@ -36,6 +39,8 @@ exports.requestUserToken = async (req, res) => {
             application_id = "67b5418986fd08d2213fcd55";
             private_key = "x0sYAt86UH7IqJEKBDqlgKtubzn1lLPCsro3I98vdQ4=";
         }
+        console.log("간변비밀번호 token발행 시작   application_id : " + application_id);
+        console.log("간변비밀번호 token발행 시작   private_key : " + private_key);
         //서버에서 갖고와야 하지만 임시... END
 
         // Bootpay 설정을 클라이언트로부터 받은 값으로 설정
@@ -54,6 +59,8 @@ exports.requestUserToken = async (req, res) => {
             gender,
             birth,
         });
+
+
 
         // 성공적으로 응답 반환
         return res.status(200).json(response);
