@@ -142,7 +142,7 @@ exports.cancel = async (req, res) => {
         await Bootpay.getAccessToken(); // Access Token 발급
         const response = await Bootpay.cancelPayment({
             receipt_id: receipt_id,
-            cancel_price: 1000, // 부분 취소 금액 (전체 취소 시 생략 가능)
+            // cancel_price: 1000, // 부분 취소 금액 (전체 취소 시 생략 가능)
             cancel_username: cancel_username,
             cancel_message: cancel_message
 
