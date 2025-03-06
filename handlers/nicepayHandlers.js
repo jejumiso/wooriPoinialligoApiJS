@@ -3,8 +3,8 @@
 const axios = require('axios');
 const base64 = require('base-64');
 
-const NICEPAY_CLIENT_KEY = 'S2_0629e726ec134bb29c25bd776e76955d'; // 나이스페이 클라이언트 키
-const NICEPAY_SECRET_KEY = '8d626d6beb4c474f9179556e6de84c44'; // 나이스페이 시크릿 키
+const NICEPAY_CLIENT_KEY = 'S1_48f2486344c54b3f95abd8b7b935f6ce'; // 나이스페이 클라이언트 키
+const NICEPAY_SECRET_KEY = '652ebd75503346adb1a85307364edad7'; // 나이스페이 시크릿 키
 
 const getKoreanTime = () => {
     return new Date().toLocaleString('ko-KR', {
