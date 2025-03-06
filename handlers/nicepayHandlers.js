@@ -18,7 +18,8 @@ exports.handleNicepayWebhook = async (req, res) => {
             signature
         } = req.body;
 
-        console.log("🔹 웹훅 수신 데이터:", req.body);
+        console.log(`[${new Date().toISOString()}] 🔹 웹훅 수신 데이터:`, req.body);
+
 
         // ✅ 1. 인증 성공 여부 확인
         if (authResultCode !== '0000') {
