@@ -17,14 +17,47 @@ const getKoreanTime = () => {
 };
 
 exports.handleNicepayWebhook = async (req, res) => {
+    console.log("🔹 나이스페이 결제 완료 응답:", req.body);
+
+    // ✅ WebView가 자동으로 닫히도록 하는 JavaScript 응답
+    res.setHeader('Content-Type', 'text/html');
+    return res.status(200).send(`
+      <!DOCTYPE html>
+      <html lang="ko">
+      <head>
+        <meta charset="UTF-8">
+        <title>결제 완료</title>
+      </head>
+      <body>
+        <script>
+          window.onload = function () {
+            console.log("✅ WebView에서 결제 완료 감지");
+
+            // ✅ WebView에서 Flutter로 메시지 전송
+            if (window.flutter_inappwebview) {
+              window.flutter_inappwebview.callHandler('onReturnUrl');
+            } else {
+              // ✅ WebView가 없는 경우 창 닫기
+              window.close();
+            }
+          };
+        </script>
+        <h1>결제가 완료되었습니다.</h1>
+      </body>
+      </html>
+    `);
+};
+
+
+exports.handleNicepayWebhook2 = async (req, res) => {
     try {
         const {
             authResultCode,
             authResultMsg,
-            tid,          
-            orderId,      
-            amount,       
-            authToken,    
+            tid,
+            orderId,
+            amount,
+            authToken,
             signature
         } = req.body;
 
