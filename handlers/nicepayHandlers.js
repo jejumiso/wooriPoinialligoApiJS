@@ -1,7 +1,7 @@
 // handlers/nicepayHandlers.js
 exports.responseEndpoint = async (req, res) => {
     try {
-        const response = { message: "NicePay Response Success" }; // 응답 객체 정의
+        const response = { message: "OK" }; // 응답 객체 정의
 
         // 성공적으로 응답 반환
         return res.status(200).json(response);
