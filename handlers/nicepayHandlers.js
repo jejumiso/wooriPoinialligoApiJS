@@ -6,6 +6,16 @@ const base64 = require('base-64');
 const NICEPAY_CLIENT_KEY = 'S2_0629e726ec134bb29c25bd776e76955d'; // 나이스페이 클라이언트 키
 const NICEPAY_SECRET_KEY = '8d626d6beb4c474f9179556e6de84c44'; // 나이스페이 시크릿 키
 
+const getKoreanTime = () => {
+    return new Date().toLocaleString('ko-KR', {
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false // 24시간 형식 유지
+    }).replace('.', '월').replace('.', '일').replace(':', '시').trim() + '분';
+};
+
 exports.handleNicepayWebhook = async (req, res) => {
     try {
         const {
@@ -18,7 +28,7 @@ exports.handleNicepayWebhook = async (req, res) => {
             signature
         } = req.body;
 
-        console.log(`[${new Date().toISOString()}] 🔹 웹훅 수신 데이터:`, req.body);
+        console.log(`[${getKoreanTime()}] 🔹 웹훅 수신 데이터:`, req.body);
 
 
         // ✅ 1. 인증 성공 여부 확인
