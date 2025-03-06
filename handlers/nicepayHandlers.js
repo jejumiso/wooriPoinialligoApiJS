@@ -20,7 +20,8 @@ exports.handleNicepayWebhook = async (req, res) => {
     console.log("🔹 나이스페이 결제 완료 응답:", req.body);
 
     // ✅ WebView가 `b.html`로 `GET` 요청을 다시 보내도록 리디렉션
-    return res.redirect(302, "/web/b.html?success=true");
+    return res.redirect(302, "http://localhost:58393/web/b.html?success=true");
+
 };
 
 
