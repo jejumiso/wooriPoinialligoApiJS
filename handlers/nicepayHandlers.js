@@ -16,21 +16,36 @@ const getKoreanTime = () => {
     }).replace('.', '월').replace('.', '일').replace(':', '시').trim() + '분';
 };
 
+
+// ✅ returnUrl에서 현재 실행 중인 Host 추출하는 함수
+const getReturnHost = (req) => {
+    let returnUrl = req.body.returnUrl || req.headers.referer;
+
+    if (!returnUrl) {
+        console.error("❌ Invalid Return URL");
+        return null;
+    }
+
+    try {
+        const urlObject = new URL(returnUrl);
+        return urlObject.origin; // "http://localhost:60960" 또는 "https://kakakoalligoapi.cafe24app.com"
+    } catch (error) {
+        console.error("❌ URL 파싱 오류:", error);
+        return null;
+    }
+};
+
+// ✅ 나이스페이 결제 완료 웹훅 처리
 exports.handleNicepayWebhook = async (req, res) => {
     console.log("🔹 나이스페이 결제 완료 응답:", req.body);
 
-    // ✅ 요청에서 동적으로 현재 실행 중인 `Host` 가져오기
-    const host = req.get('Host'); // 예: "localhost:54760" 또는 "kakakoalligoapi.cafe24app.com"
+    const host = getReturnHost(req);
+    if (!host) return res.status(400).send("Invalid Return URL");
 
-    if (!host) {
-        return res.status(400).send("Invalid Host");
-    }
-
-    const redirectUrl = `http://${host}/web/b.html?success=true`;
+    const redirectUrl = `${host}/web/b.html?success=true`;
 
     console.log(`✅ Redirecting to: ${redirectUrl}`);
 
-    // ✅ WebView가 자동으로 `b.html`로 이동하도록 `302 Redirect` 응답
     return res.redirect(302, redirectUrl);
 };
 
