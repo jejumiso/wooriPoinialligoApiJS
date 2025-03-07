@@ -21,7 +21,7 @@ app.use(bodyParser.json());
 app.use('/api/aligo', aligoRoutes);
 app.use('/api/bootpay', bootpayRoutes);
 app.use('/api/encryption', encryptionRoutes);
-app.use('/api/nicepay', nicePay);
+app.use('/api/nicepay', nicepayRoutes);
 
 
 
