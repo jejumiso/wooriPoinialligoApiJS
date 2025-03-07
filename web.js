@@ -4,7 +4,6 @@ const bodyParser = require('body-parser');
 const cors = require('cors'); // CORS 미들웨어 추가
 const aligoRoutes = require('./routes/aligo');
 const bootpayRoutes = require('./routes/bootpay'); // 새로 추가
-const nicepayRoutes = require('./routes/nicePay'); // 새로 추가
 const encryptionRoutes = require('./routes/encryption'); // 새로 추가
 
 
@@ -20,7 +19,6 @@ app.use(bodyParser.json());
 // 알리고 API 경로 설정
 app.use('/api/aligo', aligoRoutes);
 app.use('/api/bootpay', bootpayRoutes);
-app.use('/api/nicePay', nicepayRoutes);
 app.use('/api/encryption', encryptionRoutes);
 
 
