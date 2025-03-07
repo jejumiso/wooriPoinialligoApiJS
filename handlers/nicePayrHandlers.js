@@ -46,7 +46,7 @@
 // };
 
 
-exports.payments = async (req, res) => {
+exports.paymentsr = async (req, res) => {
     try {
         console.log("🔹 [카페24] 나이스페이 최종 승인 요청 수신:");
     } catch (error) {
