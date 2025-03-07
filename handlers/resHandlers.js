@@ -1,4 +1,4 @@
-// handlers/aligoHandlers.js
+// handlers/resHandlers.js
 const aligoapi = require('aligoapi');
 const AuthData = require('../config/auth');
 
