@@ -1,3 +1,6 @@
+const axios = require('axios'); // CommonJS 방식
+
+
 const payments = async (req, res) => {
     try {
         const { amount, encodedCredentials, tid } = req.body;
