@@ -5,6 +5,7 @@ const cors = require('cors'); // CORS 미들웨어 추가
 const aligoRoutes = require('./routes/aligo');
 const bootpayRoutes = require('./routes/bootpay'); // 새로 추가
 const encryptionRoutes = require('./routes/encryption'); // 새로 추가
+const nicePay = require('./routes/nicePay'); // 새로 추가
 
 
 const app = express();
@@ -20,6 +21,7 @@ app.use(bodyParser.json());
 app.use('/api/aligo', aligoRoutes);
 app.use('/api/bootpay', bootpayRoutes);
 app.use('/api/encryption', encryptionRoutes);
+app.use('/api/nicePay', nicePay);
 
 
 
