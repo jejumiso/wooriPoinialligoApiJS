@@ -17,7 +17,8 @@ const payments = async (req, res) => {
         const approvalData = { amount: amount };
 
         // ✅ Authorization 헤더 검증 (Base64 형식인지 체크)
-        if (!encodedCredentials.includes(":")) {
+        const decoded = Buffer.from(encodedCredentials, 'base64').toString('ascii');
+        if (!decoded.includes(":")) {
             console.warn("⚠️ [카페24] 잘못된 Authorization 형식 감지");
         }
 
