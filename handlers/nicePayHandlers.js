@@ -41,18 +41,30 @@ const payments = async (req, res) => {
         return res.json({ success: true, data: response.data });
 
     } catch (error) {
-        console.error("❌ [카페24] 나이스페이 최종 승인 오류:");
+        console.error("❌ [카페24] 나이스페이 최종 승인 오류 발생!");
+
         if (error.response) {
-            console.error("🔴 응답 데이터:", error.response.data);
+            console.error("🔴 응답 데이터:", JSON.stringify(error.response.data, null, 2));
             console.error("🔴 응답 상태 코드:", error.response.status);
+            return res.status(500).json({
+                error: "결제 승인 중 오류 발생 (API 응답)",
+                details: error.response.data
+            });
+        } else if (error.request) {
+            console.error("⚠️ [카페24] 요청이 전송되었으나 응답을 받지 못함:", error.request);
+            return res.status(500).json({
+                error: "결제 승인 중 오류 발생 (응답 없음)",
+                details: "나이스페이 서버로부터 응답이 오지 않았습니다."
+            });
         } else {
-            console.error("🔴 네트워크 오류 또는 요청 실패:", error.message);
+            console.error("⚠️ [카페24] 요청 설정 중 오류 발생:", error.message);
+            return res.status(500).json({
+                error: "결제 승인 중 오류 발생 (요청 오류)",
+                details: error.message
+            });
         }
-        return res.status(500).json({
-            error: "결제 승인 중 오류 발생",
-            details: error.response?.data || error.message
-        });
     }
+
 };
 
 module.exports = {
