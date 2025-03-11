@@ -47,21 +47,23 @@ const payments = async (req, res) => {
             console.error("🔴 응답 데이터:", JSON.stringify(error.response.data, null, 2));
             console.error("🔴 응답 상태 코드:", error.response.status);
             return res.status(500).json({
-                error: "결제 승인 중 오류 발생 (API 응답)",
-                details: error.response.data
+                success: false,
+                data: { resultMsg: "결제 승인 중 오류 발생 (API 응답)" }
             });
         } else if (error.request) {
             console.error("⚠️ [카페24] 요청이 전송되었으나 응답을 받지 못함:", error.request);
             return res.status(500).json({
-                error: "결제 승인 중 오류 발생 (응답 없음)",
-                details: "나이스페이 서버로부터 응답이 오지 않았습니다."
+                success: false,
+                data: { resultMsg: "결제 승인 중 오류 발생 (응답 없음)" }
             });
+          
         } else {
             console.error("⚠️ [카페24] 요청 설정 중 오류 발생:", error.message);
             return res.status(500).json({
-                error: "결제 승인 중 오류 발생 (요청 오류)",
-                details: error.message
+                success: false,
+                data: { resultMsg: "결제 승인 중 오류 발생 (요청 오류)" }
             });
+         
         }
     }
 
