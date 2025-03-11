@@ -3,7 +3,7 @@ const axios = require('axios'); // CommonJS 방식
 
 const payments = async (req, res) => {
     try {
-        const { amount, encodedCredentials, tid } = req.body;
+        const { isTest, amount, encodedCredentials, tid } = req.body;
 
         // ✅ 필수 데이터 검증
         if (!amount || !encodedCredentials || !tid) {
@@ -13,7 +13,10 @@ const payments = async (req, res) => {
         console.log("🔹 [카페24] 나이스페이 최종 승인 요청 수신:", { amount, tid });
 
         // ✅ 나이스페이 최종 승인 API 요청 설정
-        const nicePayApprovalUrl = `https://sandbox-api.nicepay.co.kr/v1/payments/${tid}`;
+        let nicePayApprovalUrl = `https://api.nicepay.co.kr/v1/payments/${tid}`;
+        if (isTest) {
+            nicePayApprovalUrl = `https://sandbox-api.nicepay.co.kr/v1/payments/${tid}`;
+        }
         const approvalData = { amount: amount };
 
         // ✅ Authorization 헤더 검증 (Base64 형식인지 체크)
