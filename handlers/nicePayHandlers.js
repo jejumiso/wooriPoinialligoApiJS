@@ -10,12 +10,15 @@ const payments = async (req, res) => {
             return res.status(400).json({ error: "필수 데이터가 누락되었습니다." });
         }
 
-        console.log("🔹 [카페24] 나이스페이 최종 승인 요청 수신:", { amount, tid });
+        
 
         // ✅ 나이스페이 최종 승인 API 요청 설정
         let nicePayApprovalUrl = `https://api.nicepay.co.kr/v1/payments/${tid}`;
         if (isTest) {
+            console.log("🔹 [카페24] 나이스페이 최종 승인 요청 수신: 테스트,", { amount, tid });
             nicePayApprovalUrl = `https://sandbox-api.nicepay.co.kr/v1/payments/${tid}`;
+        } else {
+            console.log("🔹 [카페24] 나이스페이 최종 승인 요청 수신: 서버,", { amount, tid });
         }
         const approvalData = { amount: amount };
 
