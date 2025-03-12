@@ -1,9 +1,10 @@
 // routes/boot.js
 const express = require('express');
 const router = express.Router();
-const { payments } = require('../handlers/nicePayHandlers');
+const { nicepayWebhook,subscribeRegist,subscribeBilling } = require('../handlers/nicePayHandlers');
 
-// 암호화 관련 
-router.post('/payments', payments);
+router.post('/nicepayWebhook', nicepayWebhook);
+router.post('/subscribeRegist', subscribeRegist);
+router.post('/subscribeBilling', subscribeBilling);
 
 module.exports = router;
