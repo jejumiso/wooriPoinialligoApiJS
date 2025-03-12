@@ -82,6 +82,26 @@ const subscribeRegist = async (req, res) => {
 
         console.log("🔹 [카페24] 나이스페이 Webhook 요청 수신:", { orderId });
 
+        // ✅ Authorization 헤더 가져오기
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith("Basic ")) {
+            console.error("⚠️ [카페24] Authorization 헤더가 없습니다.");
+            return res.status(401).json({ error: "Unauthorized: No Authorization header" });
+        }
+
+        // ✅ Authorization 헤더 디코딩
+        const encodedCredentials = authHeader.split(" ")[1]; // "Basic {base64}" → base64 부분만 추출
+        const decodedCredentials = Buffer.from(encodedCredentials, "base64").toString("utf-8");
+
+        // ✅ clientId, secretKey가 ":"로 구분되어야 함
+        if (!decodedCredentials.includes(":")) {
+            console.error("⚠️ [카페24] Authorization 형식 오류!");
+            return res.status(401).json({ error: "Unauthorized: Invalid Authorization format" });
+        }
+
+        const [clientId, secretKey] = decodedCredentials.split(":"); // clientId, secretKey 추출
+        console.log("🔹 [카페24] 인증 정보 확인 - clientId:", clientId);
+
         // ✅ 나이스페이 API 요청 (실제 서버 or 테스트 서버 선택)
         let nicePayUrl = "https://api.nicepay.co.kr/v1/subscribe/regist";
         if (!isRealServe) {
@@ -94,7 +114,7 @@ const subscribeRegist = async (req, res) => {
             { encData, orderId }, 
             {
                 headers: {
-                    Authorization: `Basic ${encodedCredentials}`,
+                    Authorization: `Basic ${encodedCredentials}`, // ✅ 나이스페이 API에도 동일한 Authorization 사용
                     "Content-Type": "application/json",
                 },
             }
@@ -129,10 +149,34 @@ const subscribeRegist = async (req, res) => {
         }
     }
 };
+
+
+
 const subscribeBilling = async (req, res) => {
     try {
         const { isRealServe, bid, orderId, amount, goodsName, cardQuota, useShopInterest } = req.body;
 
+        // ✅ Authorization 헤더 가져오기
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith("Basic ")) {
+            console.error("⚠️ [카페24] Authorization 헤더가 없습니다.");
+            return res.status(401).json({ error: "Unauthorized: No Authorization header" });
+        }
+
+        // ✅ Authorization 헤더 디코딩
+        const encodedCredentials = authHeader.split(" ")[1]; // "Basic {base64}" → base64 부분만 추출
+        const decodedCredentials = Buffer.from(encodedCredentials, "base64").toString("utf-8");
+
+        // ✅ clientId, secretKey가 ":"로 구분되어야 함
+        if (!decodedCredentials.includes(":")) {
+            console.error("⚠️ [카페24] Authorization 형식 오류!");
+            return res.status(401).json({ error: "Unauthorized: Invalid Authorization format" });
+        }
+
+        const [clientId, secretKey] = decodedCredentials.split(":"); // clientId, secretKey 추출
+        console.log("🔹 [카페24] 인증 정보 확인 - clientId:", clientId);
+
+        // ✅ 필수 데이터 검증
         if (!bid || !orderId || !amount || !goodsName) {
             return res.status(400).json({ error: "필수 데이터가 누락되었습니다." });
         }
@@ -151,7 +195,7 @@ const subscribeBilling = async (req, res) => {
             { orderId, amount, goodsName, cardQuota: cardQuota ?? 0, useShopInterest: useShopInterest ?? false }, 
             {
                 headers: {
-                    Authorization: `Basic ${encodedCredentials}`,
+                    Authorization: `Basic ${encodedCredentials}`, // ✅ 나이스페이 API에도 동일한 Authorization 사용
                     "Content-Type": "application/json",
                 },
             }
@@ -186,6 +230,7 @@ const subscribeBilling = async (req, res) => {
         }
     }
 };
+
 
 
 
