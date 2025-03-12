@@ -1,18 +1,63 @@
 const axios = require('axios'); // CommonJS 방식
+import { Request } from 'express';
+
+/**
+ * Authorization 헤더에서 encodedCredentials를 추출하고, 디코딩하여 clientId를 반환합니다.
+ * 올바르지 않은 형식일 경우 Error를 throw합니다.
+ */
+export function extractCredentials(req: Request): { encodedCredentials: string; clientId: string } {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Basic ")) {
+        throw new Error("Authorization 헤더가 없거나 올바른 형식이 아닙니다.");
+    }
+    const encodedCredentials = authHeader.split(" ")[1];
+    const decodedCredentials = Buffer.from(encodedCredentials, "base64").toString("utf-8");
+    if (!decodedCredentials.includes(":")) {
+        throw new Error("잘못된 인증 형식입니다.");
+    }
+    const [clientId] = decodedCredentials.split(":");
+    return { encodedCredentials, clientId };
+}
 
 
-const nicepayWebhook = async (req, res) => {
+
+
+export interface ApiResponse<T = any> {
+    isSuccess: boolean;
+    statusCode?: number;
+    data?: T;
+    error?: string;
+    message?: string;
+}
+/**
+ * 나이스페이 결제(승인) API 호출
+ */
+export const nicepayWebhook = async (req: Request, res: Response) => {
     try {
-        const { isRealServe, amount, encodedCredentials, tid } = req.body;
+        const { isRealServe, amount, tid } = req.body;
 
-        // ✅ 필수 데이터 검증
-        if (!amount || !encodedCredentials || !tid) {
-            return res.status(400).json({ error: "필수 데이터가 누락되었습니다." });
+        if (typeof isRealServe !== "boolean" || !amount || !tid) {
+            return res.status(400).json({
+                isSuccess: false,
+                statusCode: 400,
+                message: "필수 데이터가 누락되었습니다.",
+            } as ApiResponse);
         }
 
-        
+        let encodedCredentials: string;
+        let clientId: string;
+        try {
+            ({ encodedCredentials, clientId } = extractCredentials(req));
+        } catch (err: any) {
+            console.error(err.message);
+            return res.status(401).json({
+                isSuccess: false,
+                statusCode: 401,
+                message: err.message,
+            } as ApiResponse);
+        }
+        console.log("🔹 [카페24] 인증 정보 확인 - clientId:", clientId);
 
-        // ✅ 나이스페이 최종 승인 API 요청 설정
         let nicePayApprovalUrl = `https://api.nicepay.co.kr/v1/payments/${tid}`;
         if (!isRealServe) {
             console.log("🔹 [카페24] 나이스페이 최종 승인 요청 수신: 테스트,", { amount, tid });
@@ -20,170 +65,168 @@ const nicepayWebhook = async (req, res) => {
         } else {
             console.log("🔹 [카페24] 나이스페이 최종 승인 요청 수신: 서버,", { amount, tid });
         }
-        const approvalData = { amount: amount };
+        const approvalData = { amount };
 
-        // ✅ Authorization 헤더 검증 (Base64 형식인지 체크)
-        const decoded = Buffer.from(encodedCredentials, 'base64').toString('ascii');
-        if (!decoded.includes(":")) {
-            console.warn("⚠️ [카페24] 잘못된 Authorization 형식 감지");
-        }
-
-        // ✅ 나이스페이 승인 요청
         const response = await axios.post(nicePayApprovalUrl, approvalData, {
             headers: {
                 Authorization: `Basic ${encodedCredentials}`,
-                "Content-Type": 'application/json',
-            }
+                "Content-Type": "application/json",
+            },
         });
 
         console.log("✅ [카페24] 나이스페이 최종 승인 응답:", response.data);
-
-        return res.json({ success: true, data: response.data });
-
-    } catch (error) {
+        return res.status(200).json({
+            isSuccess: true,
+            statusCode: 200,
+            message: response.data.resultMsg,
+            data: response.data,
+        } as ApiResponse);
+    } catch (error: any) {
         console.error("❌ [카페24] 나이스페이 최종 승인 오류 발생!");
-
         if (error.response) {
-            console.error("🔴 응답 데이터:", JSON.stringify(error.response.data, null, 2));
-            console.error("🔴 응답 상태 코드:", error.response.status);
             return res.status(500).json({
-                success: false,
-                data: { resultMsg: "결제 승인 중 오류 발생 (API 응답)" }
-            });
+                isSuccess: false,
+                statusCode: error.response?.status ?? 500,
+                message: error.response?.data?.resultMsg ?? "알 수 없는 오류가 발생했습니다.",
+                data: error.response?.data,
+            } as ApiResponse);
         } else if (error.request) {
-            console.error("⚠️ [카페24] 요청이 전송되었으나 응답을 받지 못함:", error.request);
             return res.status(500).json({
-                success: false,
-                data: { resultMsg: "결제 승인 중 오류 발생 (응답 없음)" }
-            });
-          
+                isSuccess: false,
+                statusCode: 500,
+                message: "결제 승인 중 오류 발생 (응답 없음)",
+                error: "응답 없음",
+            } as ApiResponse);
         } else {
-            console.error("⚠️ [카페24] 요청 설정 중 오류 발생:", error.message);
             return res.status(500).json({
-                success: false,
-                data: { resultMsg: "결제 승인 중 오류 발생 (요청 오류)" }
-            });
-         
+                isSuccess: false,
+                statusCode: 500,
+                message: "결제 승인 중 오류 발생 (요청 오류)",
+                error: error.message,
+            } as ApiResponse);
         }
     }
-
 };
 
 
 
-const subscribeRegist = async (req, res) => {
+
+/**
+ * 나이스페이 정기결제의 카드 등록록
+ */
+export const subscribeRegist = async (req: Request, res: Response) => {
     try {
         const { isRealServe, encData, orderId } = req.body;
 
-        // ✅ 필수 데이터 검증
         if (!encData || !orderId) {
-            return res.status(400).json({ error: "필수 데이터가 누락되었습니다." });
+            return res.status(400).json({
+                isSuccess: false,
+                statusCode: 400,
+                message: "필수 데이터가 누락되었습니다.",
+            } as ApiResponse);
         }
 
         console.log("🔹 [카페24] 나이스페이 Webhook 요청 수신:", { orderId });
 
-        // ✅ Authorization 헤더 가져오기
-        const authHeader = req.headers.authorization;
-        if (!authHeader || !authHeader.startsWith("Basic ")) {
-            console.error("⚠️ [카페24] Authorization 헤더가 없습니다.");
-            return res.status(401).json({ error: "Unauthorized: No Authorization header" });
+        let encodedCredentials: string;
+        let clientId: string;
+        try {
+            ({ encodedCredentials, clientId } = extractCredentials(req));
+        } catch (err: any) {
+            console.error(err.message);
+            return res.status(401).json({
+                isSuccess: false,
+                statusCode: 401,
+                message: err.message,
+            } as ApiResponse);
         }
-
-        // ✅ Authorization 헤더 디코딩
-        const encodedCredentials = authHeader.split(" ")[1]; // "Basic {base64}" → base64 부분만 추출
-        const decodedCredentials = Buffer.from(encodedCredentials, "base64").toString("utf-8");
-
-        // ✅ clientId, secretKey가 ":"로 구분되어야 함
-        if (!decodedCredentials.includes(":")) {
-            console.error("⚠️ [카페24] Authorization 형식 오류!");
-            return res.status(401).json({ error: "Unauthorized: Invalid Authorization format" });
-        }
-
-        const [clientId, secretKey] = decodedCredentials.split(":"); // clientId, secretKey 추출
         console.log("🔹 [카페24] 인증 정보 확인 - clientId:", clientId);
 
-        // ✅ 나이스페이 API 요청 (실제 서버 or 테스트 서버 선택)
         let nicePayUrl = "https://api.nicepay.co.kr/v1/subscribe/regist";
         if (!isRealServe) {
             nicePayUrl = "https://sandbox-api.nicepay.co.kr/v1/subscribe/regist";
             console.log("🔹 [카페24] 나이스페이 테스트 서버로 요청 전송");
         }
 
-        // ✅ 나이스페이 API 호출
-        const response = await axios.post(nicePayUrl, 
-            { encData, orderId }, 
+        const response = await axios.post(
+            nicePayUrl,
+            { encData, orderId },
             {
                 headers: {
-                    Authorization: `Basic ${encodedCredentials}`, // ✅ 나이스페이 API에도 동일한 Authorization 사용
+                    Authorization: `Basic ${encodedCredentials}`,
                     "Content-Type": "application/json",
                 },
             }
         );
 
         console.log("✅ [카페24] 나이스페이 Webhook 응답:", response.data);
-
-        return res.json({ success: true, data: response.data });
-
-    } catch (error) {
+        return res.status(200).json({
+            isSuccess: true,
+            statusCode: 200,
+            data: response.data,
+            message: "정상적으로 처리되었습니다.",
+        } as ApiResponse);
+    } catch (error: any) {
         console.error("❌ [카페24] 나이스페이 Webhook 오류 발생!");
-
         if (error.response) {
-            console.error("🔴 응답 데이터:", JSON.stringify(error.response.data, null, 2));
-            console.error("🔴 응답 상태 코드:", error.response.status);
             return res.status(500).json({
-                success: false,
-                data: { resultMsg: "나이스페이 호출 중 오류 발생 (API 응답)" }
-            });
+                isSuccess: false,
+                statusCode: error.response?.status ?? 500,
+                message: error.response?.data?.resultMsg ?? "알 수 없는 오류가 발생했습니다.",
+                data: error.response?.data,
+            } as ApiResponse);
         } else if (error.request) {
-            console.error("⚠️ 요청이 전송되었으나 응답을 받지 못함:", error.request);
             return res.status(500).json({
-                success: false,
-                data: { resultMsg: "나이스페이 호출 중 오류 발생 (응답 없음)" }
-            });
+                isSuccess: false,
+                statusCode: 500,
+                message: "나이스페이 호출 중 오류 발생 (응답 없음)",
+                error: "응답 없음",
+            } as ApiResponse);
         } else {
-            console.error("⚠️ 요청 설정 중 오류 발생:", error.message);
             return res.status(500).json({
-                success: false,
-                data: { resultMsg: "나이스페이 호출 중 오류 발생 (요청 오류)" }
-            });
+                isSuccess: false,
+                statusCode: 500,
+                message: "나이스페이 호출 중 오류 발생 (요청 오류)",
+                error: error.message,
+            } as ApiResponse);
         }
     }
 };
 
 
-
-const subscribeBilling = async (req, res) => {
+/**
+ * 나이스페이 정기결제에 등록된 카드로 결제 요청
+ */
+export const subscribeBilling = async (req: Request, res: Response) => {
     try {
         const { isRealServe, bid, orderId, amount, goodsName, cardQuota, useShopInterest } = req.body;
 
-        // ✅ Authorization 헤더 가져오기
-        const authHeader = req.headers.authorization;
-        if (!authHeader || !authHeader.startsWith("Basic ")) {
-            console.error("⚠️ [카페24] Authorization 헤더가 없습니다.");
-            return res.status(401).json({ error: "Unauthorized: No Authorization header" });
-        }
-
-        // ✅ Authorization 헤더 디코딩
-        const encodedCredentials = authHeader.split(" ")[1]; // "Basic {base64}" → base64 부분만 추출
-        const decodedCredentials = Buffer.from(encodedCredentials, "base64").toString("utf-8");
-
-        // ✅ clientId, secretKey가 ":"로 구분되어야 함
-        if (!decodedCredentials.includes(":")) {
-            console.error("⚠️ [카페24] Authorization 형식 오류!");
-            return res.status(401).json({ error: "Unauthorized: Invalid Authorization format" });
-        }
-
-        const [clientId, secretKey] = decodedCredentials.split(":"); // clientId, secretKey 추출
-        console.log("🔹 [카페24] 인증 정보 확인 - clientId:", clientId);
-
         // ✅ 필수 데이터 검증
         if (!bid || !orderId || !amount || !goodsName) {
-            return res.status(400).json({ error: "필수 데이터가 누락되었습니다." });
+            return res.status(400).json({
+                isSuccess: false,
+                statusCode: 400,
+                message: "필수 데이터가 누락되었습니다.",
+            } as ApiResponse);
         }
 
         console.log("🔹 [카페24] 나이스페이 Billing Webhook 요청 수신:", { orderId });
 
-        // ✅ 나이스페이 API URL 설정
+        // ✅ Authorization 헤더에서 encodedCredentials 및 clientId 추출
+        let encodedCredentials: string, clientId: string;
+        try {
+            ({ encodedCredentials, clientId } = extractCredentials(req));
+        } catch (err: any) {
+            console.error(err.message);
+            return res.status(401).json({
+                isSuccess: false,
+                statusCode: 401,
+                message: err.message,
+            } as ApiResponse);
+        }
+        console.log("🔹 [카페24] 인증 정보 확인 - clientId:", clientId);
+
+        // ✅ 나이스페이 API URL 설정 (실제 서버 vs 테스트 서버)
         let nicePayUrl = `https://api.nicepay.co.kr/v1/subscribe/${bid}/payments`;
         if (isRealServe !== "production") {
             nicePayUrl = `https://sandbox-api.nicepay.co.kr/v1/subscribe/${bid}/payments`;
@@ -191,53 +234,60 @@ const subscribeBilling = async (req, res) => {
         }
 
         // ✅ 나이스페이 API 호출
-        const response = await axios.post(nicePayUrl, 
-            { orderId, amount, goodsName, cardQuota: cardQuota ?? 0, useShopInterest: useShopInterest ?? false }, 
+        const response = await axios.post(
+            nicePayUrl,
+            {
+                orderId,
+                amount,
+                goodsName,
+                cardQuota: cardQuota ?? 0,
+                useShopInterest: useShopInterest ?? false,
+            },
             {
                 headers: {
-                    Authorization: `Basic ${encodedCredentials}`, // ✅ 나이스페이 API에도 동일한 Authorization 사용
+                    Authorization: `Basic ${encodedCredentials}`,
                     "Content-Type": "application/json",
                 },
             }
         );
 
         console.log("✅ [카페24] 나이스페이 Billing Webhook 응답:", response.data);
-
-        return res.json({ success: true, data: response.data });
-
-    } catch (error) {
+        return res.status(200).json({
+            isSuccess: true,
+            statusCode: 200,
+            data: response.data,
+            message: "정상적으로 처리되었습니다.",
+        } as ApiResponse);
+    } catch (error: any) {
         console.error("❌ [카페24] 나이스페이 Billing Webhook 오류 발생!");
-
         if (error.response) {
             console.error("🔴 응답 데이터:", JSON.stringify(error.response.data, null, 2));
             console.error("🔴 응답 상태 코드:", error.response.status);
             return res.status(500).json({
-                success: false,
-                data: { resultMsg: "나이스페이 호출 중 오류 발생 (API 응답)" }
-            });
+                isSuccess: false,
+                statusCode: error.response?.status ?? 500,
+                message: error.response?.data?.resultMsg ?? "나이스페이 호출 중 오류 발생 (API 응답)",
+                data: error.response?.data,
+            } as ApiResponse);
         } else if (error.request) {
             console.error("⚠️ 요청이 전송되었으나 응답을 받지 못함:", error.request);
             return res.status(500).json({
-                success: false,
-                data: { resultMsg: "나이스페이 호출 중 오류 발생 (응답 없음)" }
-            });
+                isSuccess: false,
+                statusCode: 500,
+                message: "나이스페이 호출 중 오류 발생 (응답 없음)",
+                error: "응답 없음",
+            } as ApiResponse);
         } else {
             console.error("⚠️ 요청 설정 중 오류 발생:", error.message);
             return res.status(500).json({
-                success: false,
-                data: { resultMsg: "나이스페이 호출 중 오류 발생 (요청 오류)" }
-            });
+                isSuccess: false,
+                statusCode: 500,
+                message: "나이스페이 호출 중 오류 발생 (요청 오류)",
+                error: error.message,
+            } as ApiResponse);
         }
     }
 };
 
 
 
-
-
-module.exports = {
-    nicepayWebhook,
-    subscribeRegist,
-    subscribeBilling
-
-};
