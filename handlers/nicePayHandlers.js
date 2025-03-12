@@ -194,6 +194,8 @@ export const subscribeRegist = async (req: Request, res: Response) => {
 };
 
 
+
+
 /**
  * 나이스페이 정기결제에 등록된 카드로 결제 요청
  */
@@ -201,19 +203,9 @@ export const subscribeBilling = async (req: Request, res: Response) => {
     try {
         const { isRealServe, bid, orderId, amount, goodsName, cardQuota, useShopInterest } = req.body;
 
-        // ✅ 필수 데이터 검증
-        if (!bid || !orderId || !amount || !goodsName) {
-            return res.status(400).json({
-                isSuccess: false,
-                statusCode: 400,
-                message: "필수 데이터가 누락되었습니다.",
-            } as ApiResponse);
-        }
-
-        console.log("🔹 [카페24] 나이스페이 Billing Webhook 요청 수신:", { orderId });
-
-        // ✅ Authorization 헤더에서 encodedCredentials 및 clientId 추출
-        let encodedCredentials: string, clientId: string;
+        // ✅ 인증 헤더에서 encodedCredentials 추출 (extractCredentials 재사용)
+        let encodedCredentials: string;
+        let clientId: string;
         try {
             ({ encodedCredentials, clientId } = extractCredentials(req));
         } catch (err: any) {
@@ -226,9 +218,20 @@ export const subscribeBilling = async (req: Request, res: Response) => {
         }
         console.log("🔹 [카페24] 인증 정보 확인 - clientId:", clientId);
 
+        // ✅ 필수 데이터 검증
+        if (!bid || !orderId || !amount || !goodsName) {
+            return res.status(400).json({
+                isSuccess: false,
+                statusCode: 400,
+                message: "필수 데이터가 누락되었습니다.",
+            } as ApiResponse);
+        }
+
+        console.log("🔹 [카페24] 나이스페이 Billing Webhook 요청 수신:", { orderId });
+
         // ✅ 나이스페이 API URL 설정 (실제 서버 vs 테스트 서버)
         let nicePayUrl = `https://api.nicepay.co.kr/v1/subscribe/${bid}/payments`;
-        if (isRealServe !== "production") {
+        if (!isRealServe) {
             nicePayUrl = `https://sandbox-api.nicepay.co.kr/v1/subscribe/${bid}/payments`;
             console.log("🔹 [카페24] 나이스페이 테스트 서버로 요청 전송");
         }
@@ -266,7 +269,7 @@ export const subscribeBilling = async (req: Request, res: Response) => {
             return res.status(500).json({
                 isSuccess: false,
                 statusCode: error.response?.status ?? 500,
-                message: error.response?.data?.resultMsg ?? "나이스페이 호출 중 오류 발생 (API 응답)",
+                message: error.response?.data?.resultMsg ?? "알 수 없는 오류가 발생했습니다.",
                 data: error.response?.data,
             } as ApiResponse);
         } else if (error.request) {
@@ -288,6 +291,5 @@ export const subscribeBilling = async (req: Request, res: Response) => {
         }
     }
 };
-
 
 
