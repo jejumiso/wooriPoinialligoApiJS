@@ -86,11 +86,8 @@ const alimtalkSend = async (req, res) => {
             hour12: false, // 24시간 형식
         }).replace(/\./g, '').replace(/\s/g, ''); // 불필요한 공백과 점 제거
 
-        console.log(`[${currentTime}] Request Data: ${JSON.stringify(req.body)}`);
-        console.log(`[${currentTime}] Request Data: ${JSON.stringify(req.body)}`);
-        console.log(`[${currentTime}] Request Data: ${JSON.stringify(req.body)}`);
-        console.log(`[${currentTime}] Request Data: ${JSON.stringify(req.body)}`);
-        console.log(`[${currentTime}] Request Data: ${JSON.stringify(req.body)}`);
+        console.log(`[${currentTime}] Request Datae되자 ㅠ: ${JSON.stringify(req.body)}`);
+
 
         const response = await aligoapi.alimtalkSend(req, AuthData);
         res.status(200).send(response);
