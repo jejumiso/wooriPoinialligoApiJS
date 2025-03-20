@@ -76,7 +76,17 @@ const templateRequest = (req, res) => {
 
 const alimtalkSend = async (req, res) => {
     try {
-        const currentTime = new Date().toISOString();
+        const currentTime = new Date().toLocaleString('ko-KR', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false, // 24시간 형식
+        }).replace(/\./g, '').replace(/\s/g, ''); // 불필요한 공백과 점 제거
+
+        console.log(`[${currentTime}] Request Data: ${JSON.stringify(req.body)}`);
         console.log(`[${currentTime}] Request Data: ${JSON.stringify(req.body)}`);
         console.log(`[${currentTime}] Request Data: ${JSON.stringify(req.body)}`);
         console.log(`[${currentTime}] Request Data: ${JSON.stringify(req.body)}`);
