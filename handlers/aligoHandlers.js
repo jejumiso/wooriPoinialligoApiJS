@@ -76,17 +76,8 @@ const templateRequest = (req, res) => {
 
 const alimtalkSend = async (req, res) => {
     try {
-        const currentTime = new Date().toLocaleString('ko-KR', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit',
-            hour12: false, // 24시간 형식
-        }).replace(/\./g, '').replace(/\s/g, ''); // 불필요한 공백과 점 제거
-
-        console.log(`[${currentTime}] Request Datae되자 ㅠ: ${JSON.stringify(req.body)}`);
+        const currentTime = new Date().toISOString();
+        console.log(`[${currentTime}] Request Data~~: ${JSON.stringify(req.body)}`);
 
 
         const response = await aligoapi.alimtalkSend(req, AuthData);
