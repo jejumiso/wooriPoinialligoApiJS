@@ -139,7 +139,11 @@ async function subscribeRegist(req, res) {
 
         const response = await axios.post(
             nicePayUrl,
-            { encData, orderId },
+            { 
+                encData, 
+                orderId,
+                encMode: 'A2' // 이걸 꼭 같이 넣어야 AES-256 처리됨 
+            },
             {
                 headers: {
                     Authorization: `Basic ${encodedCredentials}`,
