@@ -138,16 +138,25 @@ const getProductOrders = async (req, res) => {
                 );
                 
                 // 응답 데이터 구조 디버깅
-                console.log(`📦 ${date} 응답 구조:`, {
-                    hasData: !!response.data,
-                    dataKeys: response.data ? Object.keys(response.data) : [],
-                    dataType: typeof response.data?.data,
-                    dataLength: Array.isArray(response.data?.data) ? response.data.data.length : 'not array'
-                });
+                console.log(`📦 ${date} 전체 응답:`, JSON.stringify(response.data, null, 2));
                 
-                const dayOrders = response.data?.data || response.data || [];
+                // StoreFarm API 응답에서 실제 주문 배열 추출
+                let dayOrders = [];
+                if (response.data?.data) {
+                    if (Array.isArray(response.data.data)) {
+                        dayOrders = response.data.data;
+                    } else if (response.data.data.list && Array.isArray(response.data.data.list)) {
+                        dayOrders = response.data.data.list;
+                    } else if (response.data.data.contents && Array.isArray(response.data.data.contents)) {
+                        dayOrders = response.data.data.contents;
+                    } else {
+                        console.log(`📦 ${date} data 객체 구조:`, Object.keys(response.data.data));
+                        dayOrders = [];
+                    }
+                }
+                
                 allOrders = allOrders.concat(dayOrders);
-                console.log(`✅ ${date}: ${Array.isArray(dayOrders) ? dayOrders.length : 'not array'}건 조회`);
+                console.log(`✅ ${date}: ${dayOrders.length}건 조회`);
                 
                 // API 호출 제한을 위한 지연 (1초로 증가)
                 await new Promise(resolve => setTimeout(resolve, 1000)); // 1초 대기
