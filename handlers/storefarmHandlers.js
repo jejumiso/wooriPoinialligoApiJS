@@ -97,19 +97,17 @@ const getProductOrders = async (req, res) => {
     }
     
     try {
-        const orderRequest = {
-            lastChangedFrom: startDate,
-            lastChangedTo: endDate
-        };
-        
-        const response = await axiosInstance.post(
-            `${STORE_FARM_API_BASE}/pay-order/seller/product-orders/query`,
-            orderRequest,
+        // 조건형 상품 주문 상세 내역 조회 API 사용
+        const response = await axiosInstance.get(
+            `${STORE_FARM_API_BASE}/pay-order/seller/product-orders`,
             {
                 headers: {
                     'Authorization': `Bearer ${access_token}`,
-                    'Content-Type': 'application/json',
                     'X-API-Version': '1.0'
+                },
+                params: {
+                    from: startDate, // 조회 시작일
+                    to: endDate      // 조회 종료일
                 }
             }
         );
