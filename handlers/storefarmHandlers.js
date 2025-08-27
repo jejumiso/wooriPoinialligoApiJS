@@ -76,6 +76,21 @@ const oauthToken = async (req, res) => {
     }
 };
 
+// 날짜 배열 생성 함수 (하루씩 분할)
+function generateDateRange(startDate, endDate) {
+    const dates = [];
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    
+    const current = new Date(start);
+    while (current <= end) {
+        dates.push(current.toISOString().split('T')[0]); // YYYY-MM-DD 형식
+        current.setDate(current.getDate() + 1);
+    }
+    
+    return dates;
+}
+
 // 상품 주문 조회
 const getProductOrders = async (req, res) => {
     console.log('📡 스토어팜 상품 주문 조회 요청:', req.body);
@@ -97,26 +112,54 @@ const getProductOrders = async (req, res) => {
     }
     
     try {
-        // 조건형 상품 주문 상세 내역 조회 API 사용
-        const response = await axiosInstance.get(
-            `${STORE_FARM_API_BASE}/pay-order/seller/product-orders`,
-            {
-                headers: {
-                    'Authorization': `Bearer ${access_token}`,
-                    'X-API-Version': '1.0'
-                },
-                params: {
-                    from: `${startDate}T00:00:00.000+09:00`, // 한국시간 시작 (밀리초 포함)
-                    to: `${endDate}T23:59:59.999+09:00`      // 한국시간 종료 (밀리초 포함)
-                }
-            }
-        );
+        // 날짜 범위를 하루씩 분할
+        const dateRange = generateDateRange(startDate, endDate);
+        console.log('📅 분할된 날짜 범위:', dateRange);
         
-        console.log('✅ 스토어팜 상품 주문 조회 성공:', response.status);
+        let allOrders = [];
+        
+        // 각 날짜별로 순차적으로 조회
+        for (const date of dateRange) {
+            console.log(`📡 ${date} 주문 조회 중...`);
+            
+            try {
+                const response = await axiosInstance.get(
+                    `${STORE_FARM_API_BASE}/pay-order/seller/product-orders`,
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${access_token}`,
+                            'X-API-Version': '1.0'
+                        },
+                        params: {
+                            from: `${date}T00:00:00.000+09:00`, // 하루 시작
+                            to: `${date}T23:59:59.999+09:00`    // 하루 종료
+                        }
+                    }
+                );
+                
+                const dayOrders = response.data?.data || [];
+                allOrders = allOrders.concat(dayOrders);
+                console.log(`✅ ${date}: ${dayOrders.length}건 조회`);
+                
+                // API 호출 제한을 위한 지연
+                await new Promise(resolve => setTimeout(resolve, 100)); // 0.1초 대기
+                
+            } catch (dayError) {
+                console.error(`❌ ${date} 조회 실패:`, dayError.response?.data || dayError.message);
+                // 하루 실패해도 다른 날짜는 계속 조회
+            }
+        }
+        
+        console.log(`✅ 전체 주문 조회 완료: 총 ${allOrders.length}건`);
         
         res.json({
             success: true,
-            data: response.data?.data || []
+            data: allOrders,
+            summary: {
+                totalCount: allOrders.length,
+                dateRange: `${startDate} ~ ${endDate}`,
+                queriedDates: dateRange.length
+            }
         });
         
     } catch (error) {
