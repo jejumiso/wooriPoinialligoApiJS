@@ -106,8 +106,8 @@ const getProductOrders = async (req, res) => {
                     'X-API-Version': '1.0'
                 },
                 params: {
-                    from: `${startDate}T00:00:00+09:00`, // 한국시간 시작 (00:00:00)
-                    to: `${endDate}T23:59:59+09:00`      // 한국시간 종료 (23:59:59)
+                    from: `${startDate}T00:00:00.000+09:00`, // 한국시간 시작 (밀리초 포함)
+                    to: `${endDate}T23:59:59.999+09:00`      // 한국시간 종료 (밀리초 포함)
                 }
             }
         );
