@@ -137,12 +137,20 @@ const getProductOrders = async (req, res) => {
                     }
                 );
                 
-                const dayOrders = response.data?.data || [];
-                allOrders = allOrders.concat(dayOrders);
-                console.log(`✅ ${date}: ${dayOrders.length}건 조회`);
+                // 응답 데이터 구조 디버깅
+                console.log(`📦 ${date} 응답 구조:`, {
+                    hasData: !!response.data,
+                    dataKeys: response.data ? Object.keys(response.data) : [],
+                    dataType: typeof response.data?.data,
+                    dataLength: Array.isArray(response.data?.data) ? response.data.data.length : 'not array'
+                });
                 
-                // API 호출 제한을 위한 지연
-                await new Promise(resolve => setTimeout(resolve, 100)); // 0.1초 대기
+                const dayOrders = response.data?.data || response.data || [];
+                allOrders = allOrders.concat(dayOrders);
+                console.log(`✅ ${date}: ${Array.isArray(dayOrders) ? dayOrders.length : 'not array'}건 조회`);
+                
+                // API 호출 제한을 위한 지연 (1초로 증가)
+                await new Promise(resolve => setTimeout(resolve, 1000)); // 1초 대기
                 
             } catch (dayError) {
                 console.error(`❌ ${date} 조회 실패:`, dayError.response?.data || dayError.message);
