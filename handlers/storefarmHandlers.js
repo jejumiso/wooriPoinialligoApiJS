@@ -259,12 +259,10 @@ const dispatchProductOrders = async (req, res) => {
     try {
         // StoreFarm API 발송 요청 데이터 구성
         const requestData = {
-            productOrderDispatchInfoList: dispatches.map(dispatch => ({
+            contents: dispatches.map(dispatch => ({
                 productOrderId: dispatch.productOrderId,
-                dispatchInfo: {
-                    deliveryCompany: dispatch.deliveryCompany,
-                    trackingNumber: dispatch.trackingNumber
-                }
+                deliveryCompany: dispatch.deliveryCompany,
+                trackingNumber: dispatch.trackingNumber
             }))
         };
         
