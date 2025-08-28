@@ -257,28 +257,60 @@ const dispatchProductOrders = async (req, res) => {
     }
     
     try {
-        // StoreFarm API 발송 요청 데이터 구성
+        console.log('📦 받은 dispatches 데이터:', JSON.stringify(dispatches, null, 2));
+        
+        // StoreFarm API 발송 요청 데이터 구성 - 여러 구조 시도
         const requestData = {
-            contents: dispatches.map(dispatch => ({
+            productOrderIds: dispatches.map(dispatch => dispatch.productOrderId),
+            dispatchInfos: dispatches.map(dispatch => ({
                 productOrderId: dispatch.productOrderId,
                 deliveryCompany: dispatch.deliveryCompany,
+                trackingNumber: dispatch.trackingNumber,
+                dispatchDate: new Date().toISOString().split('T')[0] // YYYY-MM-DD 형식
+            }))
+        };
+        
+        // 대안 구조도 준비
+        const alternativeRequestData = {
+            productOrderDispatchList: dispatches.map(dispatch => ({
+                productOrderId: dispatch.productOrderId,
+                deliveryMethod: "DELIVERY",
+                deliveryCompanyCode: dispatch.deliveryCompany,
                 trackingNumber: dispatch.trackingNumber
             }))
         };
         
-        console.log('📦 발송 처리 요청 데이터:', JSON.stringify(requestData, null, 2));
+        console.log('📦 주요 발송 처리 요청 데이터:', JSON.stringify(requestData, null, 2));
+        console.log('📦 대안 발송 처리 요청 데이터:', JSON.stringify(alternativeRequestData, null, 2));
         
-        const response = await axiosInstance.post(
-            `${STORE_FARM_API_BASE}/pay-order/seller/product-orders/dispatch`,
-            requestData,
-            {
-                headers: {
-                    'Authorization': `Bearer ${access_token}`,
-                    'X-API-Version': '1.0',
-                    'Content-Type': 'application/json'
+        // 먼저 주요 구조로 시도
+        let response;
+        try {
+            response = await axiosInstance.post(
+                `${STORE_FARM_API_BASE}/pay-order/seller/product-orders/dispatch`,
+                requestData,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${access_token}`,
+                        'X-API-Version': '1.0',
+                        'Content-Type': 'application/json'
+                    }
                 }
-            }
-        );
+            );
+        } catch (firstError) {
+            console.log('📦 첫 번째 구조 실패, 대안 구조로 재시도...');
+            response = await axiosInstance.post(
+                `${STORE_FARM_API_BASE}/pay-order/seller/product-orders/dispatch`,
+                alternativeRequestData,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${access_token}`,
+                        'X-API-Version': '1.0',
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+        }
         
         console.log('✅ 스토어팜 발송 처리 성공:', response.data);
         
