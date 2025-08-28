@@ -95,6 +95,20 @@ function generateDateRange(startDate, endDate) {
 function transformOrders(rawOrders) {
     console.log('📦 변환 전 원본 데이터 샘플:', JSON.stringify(rawOrders[0], null, 2));
     
+    // productOrder 구조 상세 확인
+    if (rawOrders[0]?.content?.productOrder) {
+        console.log('📦 productOrder 전체 구조:', JSON.stringify(rawOrders[0].content.productOrder, null, 2));
+        const po = rawOrders[0].content.productOrder;
+        console.log('📦 송장번호 관련 필드들:', {
+            trackingNumber: po.trackingNumber,
+            deliveryTrackingNumber: po.deliveryTrackingNumber,
+            invoiceNumber: po.invoiceNumber,
+            packageTrackingNumber: po.packageTrackingNumber,
+            deliveryNumber: po.deliveryNumber,
+            allKeys: Object.keys(po).filter(key => key.toLowerCase().includes('track') || key.toLowerCase().includes('invoice') || key.toLowerCase().includes('number') || key.toLowerCase().includes('delivery'))
+        });
+    }
+    
     const transformed = rawOrders.map(item => {
         // 데이터 구조 확인
         const order = item.content?.order || {};
