@@ -259,14 +259,14 @@ const dispatchProductOrders = async (req, res) => {
     try {
         console.log('📦 받은 dispatches 데이터:', JSON.stringify(dispatches, null, 2));
         
-        // StoreFarm API 발송 요청 데이터 구성 - contents 필드를 다시 사용하되 더 완전한 구조로
+        // StoreFarm API 발송 요청 데이터 구성 - 공식 문서에 따른 올바른 구조
         const requestData = {
-            contents: dispatches.map(dispatch => ({
+            dispatchProductOrders: dispatches.map(dispatch => ({
                 productOrderId: dispatch.productOrderId,
-                deliveryCompany: dispatch.deliveryCompany,
-                trackingNumber: dispatch.trackingNumber,
                 deliveryMethod: "DELIVERY",
-                dispatchDate: new Date().toISOString().split('T')[0]
+                deliveryCompanyCode: dispatch.deliveryCompany, // HYUNDAI, CJGLS, EPOST
+                trackingNumber: dispatch.trackingNumber,
+                dispatchDate: new Date().toISOString() // ISO-8601 형식: 2025-08-28T08:30:00.000Z
             }))
         };
         
