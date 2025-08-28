@@ -113,6 +113,7 @@ function transformOrders(rawOrders) {
         // 데이터 구조 확인
         const order = item.content?.order || {};
         const productOrder = item.content?.productOrder || {};
+        const delivery = item.content?.delivery || {}; // delivery 객체 추가
         const shippingAddress = productOrder.shippingAddress || {};
         
         const result = {
@@ -126,13 +127,15 @@ function transformOrders(rawOrders) {
             totalPaymentAmount: productOrder.totalPaymentAmount || 0,
             orderedDate: order.orderDate || null,
             productOrderStatus: productOrder.productOrderStatus || 'UNKNOWN',
-            // 배송 정보 추가 (송장번호 포함)
-            deliveryCompany: productOrder.expectedDeliveryCompany || 'HYUNDAI', // 기본값: 롯데택배
-            trackingNumber: productOrder.trackingNumber || '', // 송장번호 (있다면 자동 입력)
+            // 배송 정보 수정 (올바른 위치에서 송장번호 가져오기)
+            deliveryCompany: delivery.deliveryCompany || productOrder.expectedDeliveryCompany || 'HYUNDAI',
+            trackingNumber: delivery.trackingNumber || '', // delivery 객체에서 송장번호 가져오기
             deliveryInfo: {
-                deliveryCompany: productOrder.expectedDeliveryCompany,
-                trackingNumber: productOrder.trackingNumber,
-                deliveryMethod: productOrder.expectedDeliveryMethod
+                deliveryCompany: delivery.deliveryCompany || productOrder.expectedDeliveryCompany,
+                trackingNumber: delivery.trackingNumber,
+                deliveryMethod: delivery.deliveryMethod || productOrder.expectedDeliveryMethod,
+                sendDate: delivery.sendDate,
+                isWrongTrackingNumber: delivery.isWrongTrackingNumber
             },
             // 추가 정보 (필요시 사용)
             paymentDate: order.paymentDate,
