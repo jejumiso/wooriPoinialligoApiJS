@@ -236,7 +236,72 @@ const getProductOrders = async (req, res) => {
     }
 };
 
+// 상품 주문 발송 처리
+const dispatchProductOrders = async (req, res) => {
+    console.log('📡 스토어팜 상품 주문 발송 처리 요청:', req.body);
+    
+    const { access_token, dispatches } = req.body;
+    
+    if (!access_token) {
+        return res.status(400).json({
+            success: false,
+            message: 'access_token이 필요합니다.'
+        });
+    }
+    
+    if (!dispatches || !Array.isArray(dispatches) || dispatches.length === 0) {
+        return res.status(400).json({
+            success: false,
+            message: '발송 처리할 주문 정보(dispatches)가 필요합니다.'
+        });
+    }
+    
+    try {
+        // StoreFarm API 발송 요청 데이터 구성
+        const requestData = {
+            productOrderDispatchInfoList: dispatches.map(dispatch => ({
+                productOrderId: dispatch.productOrderId,
+                dispatchInfo: {
+                    deliveryCompany: dispatch.deliveryCompany,
+                    trackingNumber: dispatch.trackingNumber
+                }
+            }))
+        };
+        
+        console.log('📦 발송 처리 요청 데이터:', JSON.stringify(requestData, null, 2));
+        
+        const response = await axiosInstance.post(
+            `${STORE_FARM_API_BASE}/pay-order/seller/product-orders/dispatch`,
+            requestData,
+            {
+                headers: {
+                    'Authorization': `Bearer ${access_token}`,
+                    'X-API-Version': '1.0',
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+        
+        console.log('✅ 스토어팜 발송 처리 성공:', response.data);
+        
+        res.json({
+            success: true,
+            data: response.data
+        });
+        
+    } catch (error) {
+        console.error('❌ 스토어팜 발송 처리 실패:', error.response?.data || error.message);
+        
+        res.status(500).json({
+            success: false,
+            message: error.response?.data?.message || error.message,
+            error: error.response?.data || error.message
+        });
+    }
+};
+
 module.exports = {
     oauthToken,
-    getProductOrders
+    getProductOrders,
+    dispatchProductOrders
 };
