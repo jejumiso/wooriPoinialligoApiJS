@@ -112,6 +112,14 @@ function transformOrders(rawOrders) {
             totalPaymentAmount: productOrder.totalPaymentAmount || 0,
             orderedDate: order.orderDate || null,
             productOrderStatus: productOrder.productOrderStatus || 'UNKNOWN',
+            // 배송 정보 추가 (송장번호 포함)
+            deliveryCompany: productOrder.expectedDeliveryCompany || 'HYUNDAI', // 기본값: 롯데택배
+            trackingNumber: productOrder.trackingNumber || '', // 송장번호 (있다면 자동 입력)
+            deliveryInfo: {
+                deliveryCompany: productOrder.expectedDeliveryCompany,
+                trackingNumber: productOrder.trackingNumber,
+                deliveryMethod: productOrder.expectedDeliveryMethod
+            },
             // 추가 정보 (필요시 사용)
             paymentDate: order.paymentDate,
             paymentMeans: order.paymentMeans,
@@ -120,7 +128,7 @@ function transformOrders(rawOrders) {
             detailedAddress: shippingAddress.detailedAddress
         };
         
-        console.log('📦 변환 후 데이터:', result);
+        console.log('📦 변환 후 데이터 (배송정보 포함):', result);
         return result;
     });
     
