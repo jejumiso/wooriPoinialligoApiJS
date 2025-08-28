@@ -91,6 +91,42 @@ function generateDateRange(startDate, endDate) {
     return dates;
 }
 
+// StoreFarm 원본 데이터를 프론트엔드 형식으로 변환
+function transformOrders(rawOrders) {
+    console.log('📦 변환 전 원본 데이터 샘플:', JSON.stringify(rawOrders[0], null, 2));
+    
+    const transformed = rawOrders.map(item => {
+        // 데이터 구조 확인
+        const order = item.content?.order || {};
+        const productOrder = item.content?.productOrder || {};
+        const shippingAddress = productOrder.shippingAddress || {};
+        
+        const result = {
+            productOrderId: item.productOrderId,
+            orderId: order.orderId || item.productOrderId,
+            buyerName: order.ordererName || '-',
+            receiverName: shippingAddress.name || '-',
+            receiverPhone: shippingAddress.tel1 || '-',
+            productName: productOrder.productName || '-',
+            quantity: productOrder.quantity || 0,
+            totalPaymentAmount: productOrder.totalPaymentAmount || 0,
+            orderedDate: order.orderDate || null,
+            productOrderStatus: productOrder.productOrderStatus || 'UNKNOWN',
+            // 추가 정보 (필요시 사용)
+            paymentDate: order.paymentDate,
+            paymentMeans: order.paymentMeans,
+            deliveryFeeAmount: productOrder.deliveryFeeAmount || 0,
+            baseAddress: shippingAddress.baseAddress,
+            detailedAddress: shippingAddress.detailedAddress
+        };
+        
+        console.log('📦 변환 후 데이터:', result);
+        return result;
+    });
+    
+    return transformed;
+}
+
 // 상품 주문 조회
 const getProductOrders = async (req, res) => {
     console.log('📡 스토어팜 상품 주문 조회 요청:', req.body);
@@ -169,11 +205,21 @@ const getProductOrders = async (req, res) => {
         
         console.log(`✅ 전체 주문 조회 완료: 총 ${allOrders.length}건`);
         
+        // 디버깅: 원본 데이터 확인
+        console.log('🔍 변환 전 allOrders 길이:', allOrders.length);
+        console.log('🔍 첫 번째 원본 데이터:', allOrders.length > 0 ? JSON.stringify(allOrders[0], null, 2) : '데이터 없음');
+        
+        // 데이터 변환 적용
+        const transformedOrders = allOrders.length > 0 ? transformOrders(allOrders) : [];
+        
+        console.log('🔍 변환 후 데이터 길이:', transformedOrders.length);
+        console.log('🔍 첫 번째 변환 데이터:', transformedOrders.length > 0 ? JSON.stringify(transformedOrders[0], null, 2) : '변환된 데이터 없음');
+        
         res.json({
             success: true,
-            data: allOrders,
+            data: transformedOrders,
             summary: {
-                totalCount: allOrders.length,
+                totalCount: transformedOrders.length,
                 dateRange: `${startDate} ~ ${endDate}`,
                 queriedDates: dateRange.length
             }
