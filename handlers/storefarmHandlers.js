@@ -283,37 +283,99 @@ const dispatchProductOrders = async (req, res) => {
     
     try {
         console.log('📦 받은 dispatches 데이터:', JSON.stringify(dispatches, null, 2));
+        console.log('📦 총 발송 처리 건수:', dispatches.length);
         
-        // StoreFarm API 발송 요청 데이터 구성 - 공식 문서에 따른 올바른 구조
-        const requestData = {
-            dispatchProductOrders: dispatches.map(dispatch => ({
-                productOrderId: dispatch.productOrderId,
-                deliveryMethod: "DELIVERY",
-                deliveryCompanyCode: dispatch.deliveryCompany, // HYUNDAI, CJGLS, EPOST
-                trackingNumber: dispatch.trackingNumber,
-                dispatchDate: new Date().toISOString() // ISO-8601 형식: 2025-08-28T08:30:00.000Z
-            }))
-        };
+        // 30개씩 배치로 나누기 (StoreFarm API 제한)
+        const BATCH_SIZE = 30;
+        const batches = [];
+        for (let i = 0; i < dispatches.length; i += BATCH_SIZE) {
+            batches.push(dispatches.slice(i, i + BATCH_SIZE));
+        }
         
-        console.log('📦 발송 처리 요청 데이터:', JSON.stringify(requestData, null, 2));
+        console.log(`📦 배치 처리: ${batches.length}개 배치로 나누어 처리 (각 배치 최대 30개)`);
         
-        const response = await axiosInstance.post(
-            `${STORE_FARM_API_BASE}/pay-order/seller/product-orders/dispatch`,
-            requestData,
-            {
-                headers: {
-                    'Authorization': `Bearer ${access_token}`,
-                    'X-API-Version': '1.0',
-                    'Content-Type': 'application/json'
+        const allResults = [];
+        
+        // 각 배치별로 순차 처리
+        for (let batchIndex = 0; batchIndex < batches.length; batchIndex++) {
+            const batch = batches[batchIndex];
+            
+            console.log(`📦 배치 ${batchIndex + 1}/${batches.length} 처리 중 (${batch.length}건)...`);
+            
+            // StoreFarm API 발송 요청 데이터 구성
+            const requestData = {
+                dispatchProductOrders: batch.map(dispatch => ({
+                    productOrderId: dispatch.productOrderId,
+                    deliveryMethod: "DELIVERY",
+                    deliveryCompanyCode: dispatch.deliveryCompany,
+                    trackingNumber: dispatch.trackingNumber,
+                    dispatchDate: new Date().toISOString()
+                }))
+            };
+            
+            console.log(`📦 배치 ${batchIndex + 1} 요청 데이터:`, JSON.stringify(requestData, null, 2));
+            
+            try {
+                const response = await axiosInstance.post(
+                    `${STORE_FARM_API_BASE}/pay-order/seller/product-orders/dispatch`,
+                    requestData,
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${access_token}`,
+                            'X-API-Version': '1.0',
+                            'Content-Type': 'application/json'
+                        }
+                    }
+                );
+                
+                console.log(`✅ 배치 ${batchIndex + 1} 발송 처리 성공:`, response.data);
+                allResults.push({
+                    batchIndex: batchIndex + 1,
+                    count: batch.length,
+                    success: true,
+                    data: response.data
+                });
+                
+                // 배치 간 1초 대기 (API 제한 고려)
+                if (batchIndex < batches.length - 1) {
+                    console.log(`📦 다음 배치 처리를 위해 1초 대기...`);
+                    await new Promise(resolve => setTimeout(resolve, 1000));
                 }
+                
+            } catch (batchError) {
+                console.error(`❌ 배치 ${batchIndex + 1} 발송 처리 실패:`, batchError.response?.data || batchError.message);
+                allResults.push({
+                    batchIndex: batchIndex + 1,
+                    count: batch.length,
+                    success: false,
+                    error: batchError.response?.data || batchError.message
+                });
             }
-        );
+        }
         
-        console.log('✅ 스토어팜 발송 처리 성공:', response.data);
+        // 전체 결과 요약
+        const successBatches = allResults.filter(r => r.success).length;
+        const failedBatches = allResults.filter(r => !r.success).length;
+        const totalProcessed = allResults.reduce((sum, r) => sum + (r.success ? r.count : 0), 0);
+        
+        console.log(`✅ 배치 처리 완료: 성공 ${successBatches}개, 실패 ${failedBatches}개, 총 처리 ${totalProcessed}건`);
+        
+        // 전체 처리 결과 응답
+        const hasFailures = failedBatches > 0;
         
         res.json({
-            success: true,
-            data: response.data
+            success: !hasFailures,
+            message: hasFailures 
+                ? `일부 배치 처리 실패: 성공 ${successBatches}개, 실패 ${failedBatches}개`
+                : `모든 배치 처리 성공: ${successBatches}개 배치, 총 ${totalProcessed}건`,
+            data: {
+                totalDispatches: dispatches.length,
+                totalBatches: batches.length,
+                successBatches,
+                failedBatches,
+                totalProcessed,
+                results: allResults
+            }
         });
         
     } catch (error) {

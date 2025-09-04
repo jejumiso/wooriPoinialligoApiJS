@@ -1,4 +1,10 @@
 
+발송 처리
+POST
+/v1/pay-order/seller/product-orders/dispatch
+
+단수 또는 복수 개 상품 주문을 발송 처리합니다. 요청 가능한 상품 주문 번호는 최대 30개입니다.
+
 Request
 application/json
 Bodyrequired
