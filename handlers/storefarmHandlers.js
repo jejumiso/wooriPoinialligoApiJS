@@ -76,30 +76,25 @@ const oauthToken = async (req, res) => {
     }
 };
 
-// 날짜 범위를 최대 7일 단위로 분할하는 함수
+// 날짜 범위를 1일 단위로 분할하는 함수 (스토어팜 API는 최대 24시간만 허용)
 function generateDateRanges(startDate, endDate) {
     const ranges = [];
-    const start = new Date(startDate);
-    const end = new Date(endDate);
+    const start = new Date(startDate + 'T00:00:00');
+    const end = new Date(endDate + 'T00:00:00');
     
     const current = new Date(start);
     while (current <= end) {
         const rangeStart = new Date(current);
-        // 최대 6일 후 (7일 범위) 또는 종료일 중 빠른 날짜
         const rangeEnd = new Date(current);
-        rangeEnd.setDate(rangeEnd.getDate() + 6);
         
-        if (rangeEnd > end) {
-            rangeEnd.setTime(end.getTime());
-        }
-        
+        // 스토어팜 API는 최대 24시간 차이만 허용하므로 같은 날짜로 설정
         ranges.push({
             from: rangeStart.toISOString().split('T')[0],
             to: rangeEnd.toISOString().split('T')[0]
         });
         
-        // 다음 범위 시작일로 이동
-        current.setDate(rangeEnd.getDate() + 1);
+        // 다음 날로 이동
+        current.setDate(current.getDate() + 1);
     }
     
     return ranges;
@@ -240,9 +235,10 @@ const getProductOrders = async (req, res) => {
                 console.log(`✅ ${range.from} ~ ${range.to}: ${rangeOrders.length}건 조회`);
                 
                 // 여러 범위를 조회하는 경우에만 대기 (마지막 제외)
+                // 스토어팜 API Rate Limit 방지를 위해 0.3초 대기
                 if (dateRanges.length > 1 && i < dateRanges.length - 1) {
-                    console.log('⏱️ 다음 API 호출 전 0.5초 대기...');
-                    await new Promise(resolve => setTimeout(resolve, 500));
+                    console.log('⏱️ 다음 API 호출 전 0.3초 대기...');
+                    await new Promise(resolve => setTimeout(resolve, 300));
                 }
                 
             } catch (rangeError) {
