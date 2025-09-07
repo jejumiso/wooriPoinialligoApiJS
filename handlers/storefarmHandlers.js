@@ -76,19 +76,33 @@ const oauthToken = async (req, res) => {
     }
 };
 
-// 날짜 배열 생성 함수 (하루씩 분할)
-function generateDateRange(startDate, endDate) {
-    const dates = [];
+// 날짜 범위를 최대 7일 단위로 분할하는 함수
+function generateDateRanges(startDate, endDate) {
+    const ranges = [];
     const start = new Date(startDate);
     const end = new Date(endDate);
     
     const current = new Date(start);
     while (current <= end) {
-        dates.push(current.toISOString().split('T')[0]); // YYYY-MM-DD 형식
-        current.setDate(current.getDate() + 1);
+        const rangeStart = new Date(current);
+        // 최대 6일 후 (7일 범위) 또는 종료일 중 빠른 날짜
+        const rangeEnd = new Date(current);
+        rangeEnd.setDate(rangeEnd.getDate() + 6);
+        
+        if (rangeEnd > end) {
+            rangeEnd.setTime(end.getTime());
+        }
+        
+        ranges.push({
+            from: rangeStart.toISOString().split('T')[0],
+            to: rangeEnd.toISOString().split('T')[0]
+        });
+        
+        // 다음 범위 시작일로 이동
+        current.setDate(rangeEnd.getDate() + 1);
     }
     
-    return dates;
+    return ranges;
 }
 
 // StoreFarm 원본 데이터를 프론트엔드 형식으로 변환
@@ -170,15 +184,18 @@ const getProductOrders = async (req, res) => {
     }
     
     try {
-        // 날짜 범위를 하루씩 분할
-        const dateRange = generateDateRange(startDate, endDate);
-        console.log('📅 분할된 날짜 범위:', dateRange);
+        // 날짜 범위를 최대 7일 단위로 분할
+        const dateRanges = generateDateRanges(startDate, endDate);
+        console.log('📅 분할된 날짜 범위:', dateRanges);
         
         let allOrders = [];
         
-        // 각 날짜별로 순차적으로 조회
-        for (const date of dateRange) {
-            console.log(`📡 ${date} 주문 조회 중...`);
+        // 각 날짜 범위별로 조회
+        for (let i = 0; i < dateRanges.length; i++) {
+            const range = dateRanges[i];
+            console.log(`📡 [${i + 1}/${dateRanges.length}] ${range.from} ~ ${range.to} 주문 조회 중...`);
+            
+            const startTime = Date.now();
             
             try {
                 const response = await axiosInstance.get(
@@ -189,39 +206,45 @@ const getProductOrders = async (req, res) => {
                             'X-API-Version': '1.0'
                         },
                         params: {
-                            from: `${date}T00:00:00.000+09:00`, // 하루 시작
-                            to: `${date}T23:59:59.999+09:00`    // 하루 종료
+                            from: `${range.from}T00:00:00.000+09:00`,
+                            to: `${range.to}T23:59:59.999+09:00`
                         }
                     }
                 );
                 
+                const endTime = Date.now();
+                console.log(`⏱️ API 호출 시간: ${endTime - startTime}ms`);
+                
                 // 응답 데이터 구조 디버깅
-                console.log(`📦 ${date} 전체 응답:`, JSON.stringify(response.data, null, 2));
+                console.log(`📦 응답 구조:`, response.data ? Object.keys(response.data) : 'no data');
                 
                 // StoreFarm API 응답에서 실제 주문 배열 추출
-                let dayOrders = [];
+                let rangeOrders = [];
                 if (response.data?.data) {
                     if (Array.isArray(response.data.data)) {
-                        dayOrders = response.data.data;
+                        rangeOrders = response.data.data;
                     } else if (response.data.data.list && Array.isArray(response.data.data.list)) {
-                        dayOrders = response.data.data.list;
+                        rangeOrders = response.data.data.list;
                     } else if (response.data.data.contents && Array.isArray(response.data.data.contents)) {
-                        dayOrders = response.data.data.contents;
+                        rangeOrders = response.data.data.contents;
                     } else {
-                        console.log(`📦 ${date} data 객체 구조:`, Object.keys(response.data.data));
-                        dayOrders = [];
+                        console.log(`📦 data 객체 구조:`, Object.keys(response.data.data));
+                        rangeOrders = [];
                     }
                 }
                 
-                allOrders = allOrders.concat(dayOrders);
-                console.log(`✅ ${date}: ${dayOrders.length}건 조회`);
+                allOrders = allOrders.concat(rangeOrders);
+                console.log(`✅ ${range.from} ~ ${range.to}: ${rangeOrders.length}건 조회`);
                 
-                // API 호출 제한을 위한 지연 (1초로 증가)
-                await new Promise(resolve => setTimeout(resolve, 1000)); // 1초 대기
+                // 여러 범위를 조회하는 경우에만 대기 (마지막 제외)
+                if (dateRanges.length > 1 && i < dateRanges.length - 1) {
+                    console.log('⏱️ 다음 API 호출 전 0.5초 대기...');
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                }
                 
-            } catch (dayError) {
-                console.error(`❌ ${date} 조회 실패:`, dayError.response?.data || dayError.message);
-                // 하루 실패해도 다른 날짜는 계속 조회
+            } catch (rangeError) {
+                console.error(`❌ ${range.from} ~ ${range.to} 조회 실패:`, rangeError.response?.data || rangeError.message);
+                // 한 범위가 실패해도 다른 범위는 계속 조회
             }
         }
         
@@ -243,7 +266,7 @@ const getProductOrders = async (req, res) => {
             summary: {
                 totalCount: transformedOrders.length,
                 dateRange: `${startDate} ~ ${endDate}`,
-                queriedDates: dateRange.length
+                apiCalls: dateRanges.length
             }
         });
         
