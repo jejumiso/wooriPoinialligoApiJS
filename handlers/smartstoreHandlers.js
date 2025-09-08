@@ -76,7 +76,7 @@ const oauthToken = async (req, res) => {
     }
 };
 
-// 날짜 범위를 1일 단위로 분할하는 함수 (스마트스토어 API는 최대 24시간만 허용)
+// 날짜 범위를 7일 단위로 분할하는 함수 (Rate Limit 고려)
 function generateDateRanges(startDate, endDate) {
     const ranges = [];
     const start = new Date(startDate + 'T00:00:00');
@@ -85,16 +85,21 @@ function generateDateRanges(startDate, endDate) {
     const current = new Date(start);
     while (current <= end) {
         const rangeStart = new Date(current);
+        // 7일 후 또는 종료일 중 더 이른 날짜 선택
         const rangeEnd = new Date(current);
+        rangeEnd.setDate(rangeEnd.getDate() + 6); // 7일 범위
         
-        // 스마트스토어 API는 최대 24시간 차이만 허용하므로 같은 날짜로 설정
+        if (rangeEnd > end) {
+            rangeEnd.setTime(end.getTime());
+        }
+        
         ranges.push({
             from: rangeStart.toISOString().split('T')[0],
             to: rangeEnd.toISOString().split('T')[0]
         });
         
-        // 다음 날로 이동
-        current.setDate(current.getDate() + 1);
+        // 다음 기간으로 이동 (7일 후)
+        current.setDate(current.getDate() + 7);
     }
     
     return ranges;
@@ -182,7 +187,7 @@ const getProductOrders = async (req, res) => {
     }
     
     try {
-        // 날짜 범위를 최대 7일 단위로 분할
+        // 날짜 범위를 7일 단위로 분할 (API 문서상 기간 제한은 없지만 Rate Limit 고려)
         const dateRanges = generateDateRanges(startDate, endDate);
         console.log('📅 분할된 날짜 범위:', dateRanges);
         
@@ -235,10 +240,11 @@ const getProductOrders = async (req, res) => {
                 console.log(`✅ ${range.from} ~ ${range.to}: ${rangeOrders.length}건 조회`);
                 
                 // 여러 범위를 조회하는 경우에만 대기 (마지막 제외)
-                // 스마트스토어 API Rate Limit 방지를 위해 0.3초 대기
+                // 스마트스토어 API Rate Limit 방지를 위해 대기
+                // 7일 단위 조회시에는 대기 시간을 짧게
                 if (dateRanges.length > 1 && i < dateRanges.length - 1) {
-                    console.log('⏱️ 다음 API 호출 전 0.3초 대기...');
-                    await new Promise(resolve => setTimeout(resolve, 300));
+                    console.log('⏱️ 다음 API 호출 전 0.5초 대기...');
+                    await new Promise(resolve => setTimeout(resolve, 500));
                 }
                 
             } catch (rangeError) {
