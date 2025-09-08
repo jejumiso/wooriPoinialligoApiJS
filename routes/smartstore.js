@@ -11,9 +11,9 @@ const {
 router.post('/oauth/token', oauthToken);
 
 // 스마트스토어 상품 주문 조회
-router.post('/orders', getProductOrders);
+router.post('/orders/list', getProductOrders);
 
 // 스마트스토어 상품 주문 발송 처리
-router.post('/dispatch', dispatchProductOrders);
+router.post('/orders/dispatch', dispatchProductOrders);
 
 module.exports = router;
