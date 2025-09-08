@@ -1,8 +1,8 @@
-// handlers/storefarmHandlers.js
+// handlers/smartstoreHandlers.js
 const axios = require('axios');
 const bcrypt = require('bcryptjs');
 
-const STORE_FARM_API_BASE = 'https://api.commerce.naver.com/external/v1';
+const SMART_STORE_API_BASE = 'https://api.commerce.naver.com/external/v1';
 
 const axiosInstance = axios.create({
     timeout: 10000
@@ -17,7 +17,7 @@ function generateSignature(clientId, clientSecret, timestamp) {
 
 // OAuth 토큰 발급
 const oauthToken = async (req, res) => {
-    console.log('📡 스토어팜 OAuth 토큰 요청:', req.body);
+    console.log('📡 스마트스토어 OAuth 토큰 요청:', req.body);
     
     const { client_id, client_secret } = req.body;
     
@@ -48,7 +48,7 @@ const oauthToken = async (req, res) => {
         });
         
         const response = await axiosInstance.post(
-            `${STORE_FARM_API_BASE}/oauth2/token`,
+            `${SMART_STORE_API_BASE}/oauth2/token`,
             params.toString(),
             {
                 headers: {
@@ -58,7 +58,7 @@ const oauthToken = async (req, res) => {
             }
         );
         
-        console.log('✅ 스토어팜 OAuth 토큰 발급 성공');
+        console.log('✅ 스마트스토어 OAuth 토큰 발급 성공');
         
         res.json({
             success: true,
@@ -66,7 +66,7 @@ const oauthToken = async (req, res) => {
         });
         
     } catch (error) {
-        console.error('❌ 스토어팜 OAuth 토큰 발급 실패:', error.response?.data || error.message);
+        console.error('❌ 스마트스토어 OAuth 토큰 발급 실패:', error.response?.data || error.message);
         
         res.status(500).json({
             success: false,
@@ -76,7 +76,7 @@ const oauthToken = async (req, res) => {
     }
 };
 
-// 날짜 범위를 1일 단위로 분할하는 함수 (스토어팜 API는 최대 24시간만 허용)
+// 날짜 범위를 1일 단위로 분할하는 함수 (스마트스토어 API는 최대 24시간만 허용)
 function generateDateRanges(startDate, endDate) {
     const ranges = [];
     const start = new Date(startDate + 'T00:00:00');
@@ -87,7 +87,7 @@ function generateDateRanges(startDate, endDate) {
         const rangeStart = new Date(current);
         const rangeEnd = new Date(current);
         
-        // 스토어팜 API는 최대 24시간 차이만 허용하므로 같은 날짜로 설정
+        // 스마트스토어 API는 최대 24시간 차이만 허용하므로 같은 날짜로 설정
         ranges.push({
             from: rangeStart.toISOString().split('T')[0],
             to: rangeEnd.toISOString().split('T')[0]
@@ -100,7 +100,7 @@ function generateDateRanges(startDate, endDate) {
     return ranges;
 }
 
-// StoreFarm 원본 데이터를 프론트엔드 형식으로 변환
+// SmartStore 원본 데이터를 프론트엔드 형식으로 변환
 function transformOrders(rawOrders) {
     console.log('📦 변환 전 원본 데이터 샘플:', JSON.stringify(rawOrders[0], null, 2));
     
@@ -163,7 +163,7 @@ function transformOrders(rawOrders) {
 
 // 상품 주문 조회
 const getProductOrders = async (req, res) => {
-    console.log('📡 스토어팜 상품 주문 조회 요청:', req.body);
+    console.log('📡 스마트스토어 상품 주문 조회 요청:', req.body);
     
     const { access_token, startDate, endDate } = req.body;
     
@@ -197,7 +197,7 @@ const getProductOrders = async (req, res) => {
             
             try {
                 const response = await axiosInstance.get(
-                    `${STORE_FARM_API_BASE}/pay-order/seller/product-orders`,
+                    `${SMART_STORE_API_BASE}/pay-order/seller/product-orders`,
                     {
                         headers: {
                             'Authorization': `Bearer ${access_token}`,
@@ -216,7 +216,7 @@ const getProductOrders = async (req, res) => {
                 // 응답 데이터 구조 디버깅
                 console.log(`📦 응답 구조:`, response.data ? Object.keys(response.data) : 'no data');
                 
-                // StoreFarm API 응답에서 실제 주문 배열 추출
+                // SmartStore API 응답에서 실제 주문 배열 추출
                 let rangeOrders = [];
                 if (response.data?.data) {
                     if (Array.isArray(response.data.data)) {
@@ -235,7 +235,7 @@ const getProductOrders = async (req, res) => {
                 console.log(`✅ ${range.from} ~ ${range.to}: ${rangeOrders.length}건 조회`);
                 
                 // 여러 범위를 조회하는 경우에만 대기 (마지막 제외)
-                // 스토어팜 API Rate Limit 방지를 위해 0.3초 대기
+                // 스마트스토어 API Rate Limit 방지를 위해 0.3초 대기
                 if (dateRanges.length > 1 && i < dateRanges.length - 1) {
                     console.log('⏱️ 다음 API 호출 전 0.3초 대기...');
                     await new Promise(resolve => setTimeout(resolve, 300));
@@ -270,7 +270,7 @@ const getProductOrders = async (req, res) => {
         });
         
     } catch (error) {
-        console.error('❌ 스토어팜 상품 주문 조회 실패:', error.response?.data || error.message);
+        console.error('❌ 스마트스토어 상품 주문 조회 실패:', error.response?.data || error.message);
         
         res.status(500).json({
             success: false,
@@ -282,7 +282,7 @@ const getProductOrders = async (req, res) => {
 
 // 상품 주문 발송 처리
 const dispatchProductOrders = async (req, res) => {
-    console.log('📡 스토어팜 상품 주문 발송 처리 요청:', req.body);
+    console.log('📡 스마트스토어 상품 주문 발송 처리 요청:', req.body);
     
     const { access_token, dispatches } = req.body;
     
@@ -304,7 +304,7 @@ const dispatchProductOrders = async (req, res) => {
         console.log('📦 받은 dispatches 데이터:', JSON.stringify(dispatches, null, 2));
         console.log('📦 총 발송 처리 건수:', dispatches.length);
         
-        // 30개씩 배치로 나누기 (StoreFarm API 제한)
+        // 30개씩 배치로 나누기 (SmartStore API 제한)
         const BATCH_SIZE = 30;
         const batches = [];
         for (let i = 0; i < dispatches.length; i += BATCH_SIZE) {
@@ -321,7 +321,7 @@ const dispatchProductOrders = async (req, res) => {
             
             console.log(`📦 배치 ${batchIndex + 1}/${batches.length} 처리 중 (${batch.length}건)...`);
             
-            // StoreFarm API 발송 요청 데이터 구성
+            // SmartStore API 발송 요청 데이터 구성
             const requestData = {
                 dispatchProductOrders: batch.map(dispatch => ({
                     productOrderId: dispatch.productOrderId,
@@ -336,7 +336,7 @@ const dispatchProductOrders = async (req, res) => {
             
             try {
                 const response = await axiosInstance.post(
-                    `${STORE_FARM_API_BASE}/pay-order/seller/product-orders/dispatch`,
+                    `${SMART_STORE_API_BASE}/pay-order/seller/product-orders/dispatch`,
                     requestData,
                     {
                         headers: {
@@ -398,7 +398,7 @@ const dispatchProductOrders = async (req, res) => {
         });
         
     } catch (error) {
-        console.error('❌ 스토어팜 발송 처리 실패:', error.response?.data || error.message);
+        console.error('❌ 스마트스토어 발송 처리 실패:', error.response?.data || error.message);
         
         res.status(500).json({
             success: false,

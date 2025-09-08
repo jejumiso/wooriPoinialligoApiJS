@@ -1,19 +1,19 @@
-// routes/storefarm.js
+// routes/smartstore.js
 const express = require('express');
 const router = express.Router();
 const {
     oauthToken,
     getProductOrders,
     dispatchProductOrders
-} = require('../handlers/storefarmHandlers');
+} = require('../handlers/smartstoreHandlers');
 
-// 스토어팜 OAuth 토큰 발급
+// 스마트스토어 OAuth 토큰 발급
 router.post('/oauth/token', oauthToken);
 
-// 스토어팜 상품 주문 조회
+// 스마트스토어 상품 주문 조회
 router.post('/orders', getProductOrders);
 
-// 스토어팜 상품 주문 발송 처리
+// 스마트스토어 상품 주문 발송 처리
 router.post('/dispatch', dispatchProductOrders);
 
 module.exports = router;
