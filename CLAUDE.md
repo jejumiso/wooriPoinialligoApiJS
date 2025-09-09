@@ -6,6 +6,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a Node.js Express API server that provides integration services for multiple Korean payment and messaging platforms. The server acts as a middleware layer between client applications and various third-party APIs including Aligo (KakaoTalk messaging), Bootpay (payments), NicePay (payments), and StoreFarm (e-commerce).
 
+## 🚨 IMPORTANT: Node.js Version Requirement
+
+**This project MUST use Node.js version 14** for both development and production:
+- Cafe24 hosting only supports Node.js 14
+- Always test with Node.js 14 to ensure compatibility
+- Package versions must be compatible with Node.js 14 (e.g., cheerio ^1.0.0-rc.10, not latest)
+- Avoid using modern Node.js features or syntax not available in v14
+
 ## Essential Commands
 
 - `npm start` - Start the server on port 8001 (production)
