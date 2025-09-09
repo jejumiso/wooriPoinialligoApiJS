@@ -29,5 +29,18 @@ app.use('/api/smartstore', smartstoreRoutes); // 스마트스토어 API 경로
 
 // 서버 시작
 app.listen(PORT, () => {
+    const now = new Date();
+    const year = String(now.getFullYear()).slice(-2);
+    const month = now.getMonth() + 1;
+    const monthStr = month < 10 ? '0' + month : String(month);
+    const day = now.getDate();
+    const dayStr = day < 10 ? '0' + day : String(day);
+    const hours = now.getHours();
+    const minutes = now.getMinutes();
+    const minutesStr = minutes < 10 ? '0' + minutes : String(minutes);
+    const period = hours < 12 ? '오전' : '오후';
+    const displayHours = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
+    
     console.log(`Server is running on http://localhost:${PORT}`);
+    console.log(`서버 시작 시간: ${year}년 ${monthStr}월 ${dayStr}일 ${period} ${displayHours}시 ${minutesStr}분`);
 });
