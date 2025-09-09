@@ -31,5 +31,15 @@ app.use('/api/tracking', trackingRoutes); // 택배 조회 API 경로
 
 // 서버 시작
 app.listen(PORT, () => {
+    const now = new Date();
+    const year = String(now.getFullYear()).slice(-2);
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = now.getHours();
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const period = hours < 12 ? '오전' : '오후';
+    const displayHours = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
+    
     console.log(`Server is running on http://localhost:${PORT}`);
+    console.log(`서버 시작 시간: ${year}년 ${month}월 ${day}일 ${period} ${displayHours}시 ${minutes}분`);
 });
