@@ -79,24 +79,25 @@ const oauthToken = async (req, res) => {
 // 날짜 범위를 1일 단위로 분할하는 함수 (스마트스토어 API는 최대 24시간 제한)
 function generateDateRanges(startDate, endDate) {
     const ranges = [];
-    const start = new Date(startDate + 'T00:00:00');
-    const end = new Date(endDate + 'T00:00:00');
-    
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
     const current = new Date(start);
     while (current <= end) {
-        const rangeStart = new Date(current);
-        const rangeEnd = new Date(current);
-        
-        // 스마트스토어 API는 최대 24시간 차이만 허용
+        // toISOString() 사용하지 않고 직접 날짜 문자열 생성
+        const year = current.getFullYear();
+        const month = String(current.getMonth() + 1).padStart(2, '0');
+        const day = String(current.getDate()).padStart(2, '0');
+
         ranges.push({
-            from: rangeStart.toISOString().split('T')[0],
-            to: rangeEnd.toISOString().split('T')[0]
+            from: `${year}-${month}-${day}`
+            // to 생략 - API가 자동으로 24시간 설정
         });
-        
+
         // 다음 날로 이동
         current.setDate(current.getDate() + 1);
     }
-    
+
     return ranges;
 }
 
@@ -191,7 +192,7 @@ const getProductOrders = async (req, res) => {
         // 각 날짜 범위별로 조회
         for (let i = 0; i < dateRanges.length; i++) {
             const range = dateRanges[i];
-            console.log(`📡 [${i + 1}/${dateRanges.length}] ${range.from} ~ ${range.to} 주문 조회 중...`);
+            console.log(`📡 [${i + 1}/${dateRanges.length}] ${range.from} 주문 조회 중...`);
             
             const startTime = Date.now();
             
@@ -205,7 +206,8 @@ const getProductOrders = async (req, res) => {
                         },
                         params: {
                             from: `${range.from}T00:00:00.000+09:00`,
-                            to: `${range.to}T23:59:59.999+09:00`
+                            // to 생략 - API가 자동으로 from으로부터 24시간 설정
+                            rangeType: 'ORDERED_DATETIME'  // 필수 파라미터 - 주문 일시 기준
                         }
                     }
                 );
@@ -232,7 +234,7 @@ const getProductOrders = async (req, res) => {
                 }
                 
                 allOrders = allOrders.concat(rangeOrders);
-                console.log(`✅ ${range.from} ~ ${range.to}: ${rangeOrders.length}건 조회`);
+                console.log(`✅ ${range.from}: ${rangeOrders.length}건 조회`);
                 
                 // 여러 범위를 조회하는 경우에만 대기 (마지막 제외)
                 // 스마트스토어 API Rate Limit 방지를 위해 대기
@@ -242,7 +244,7 @@ const getProductOrders = async (req, res) => {
                 }
                 
             } catch (rangeError) {
-                console.error(`❌ ${range.from} ~ ${range.to} 조회 실패:`, rangeError.response?.data || rangeError.message);
+                console.error(`❌ ${range.from} 조회 실패:`, rangeError.response?.data || rangeError.message);
                 // 한 범위가 실패해도 다른 범위는 계속 조회
             }
         }
