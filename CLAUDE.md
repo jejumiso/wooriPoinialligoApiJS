@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a Node.js Express API server that provides integration services for multiple Korean payment and messaging platforms. The server acts as a middleware layer between client applications and various third-party APIs including Aligo (KakaoTalk messaging), Bootpay (payments), NicePay (payments), and StoreFarm (e-commerce).
+This is a Node.js Express API server that provides integration services for multiple Korean payment and messaging platforms. The server acts as a middleware layer between client applications and various third-party APIs including Aligo (KakaoTalk messaging), Bootpay (payments), NicePay (payments), and SmartStore (e-commerce).
 
 ## Essential Commands
 
@@ -25,7 +25,7 @@ All endpoints follow the pattern `/api/{service}/{operation}` where:
 - **aligo**: KakaoTalk messaging (alimtalk, friendtalk, templates, profiles)
 - **bootpay**: Payment processing and user tokens
 - **nicepay**: NicePay payment integration
-- **storefarm**: StoreFarm e-commerce platform integration
+- **smartstore**: SmartStore e-commerce platform integration
 - **encryption**: Data encryption/decryption utilities
 
 ### Request/Response Pattern
@@ -45,7 +45,7 @@ Most handlers follow a consistent pattern:
 
 **Bootpay**: Payment processing with user token management and payment cancellation
 
-**StoreFarm**: E-commerce integration for order management and dispatch processing
+**SmartStore**: E-commerce integration for order management and dispatch processing
 
 **NicePay**: Payment gateway integration (handlers present but routes may need verification)
 
