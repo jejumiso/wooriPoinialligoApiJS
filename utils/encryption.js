@@ -6,7 +6,7 @@ const crypto = require('crypto');
 function encryptData(text, key, iv) {
 
     const encryptionKey = CryptoJS.enc.Utf8.parse(key);
-    const encryptionIV = CryptoJS.enc.Utf8.parse(iv);
+    const encryptionIV = CryptoJS.enc.Base64.parse(iv);
 
     const encrypted = CryptoJS.AES.encrypt(text, encryptionKey, {
         iv: encryptionIV,
@@ -26,7 +26,7 @@ function encryptData(text, key, iv) {
 function decryptData(encryptedText, key, iv) {
 
     const decryptionKey = CryptoJS.enc.Utf8.parse(key);
-    const decryptionIV = CryptoJS.enc.Utf8.parse(iv);
+    const decryptionIV = CryptoJS.enc.Base64.parse(iv);
 
     // URL-safe Base64를 일반 Base64로 변환하고 끝의 '=' 패딩 제거
     // 암호화 된 문자의 URL-safe화 된것도 같이 사용하기 위해.
