@@ -7,6 +7,7 @@ const bootpayRoutes = require('./routes/bootpay'); // 새로 추가
 const encryptionRoutes = require('./routes/encryption'); // 새로 추가
 const nicepayRoutes = require('./routes/nicePay'); // 새로 추가
 const smartstoreRoutes = require('./routes/smartstore'); // 스마트스토어 추가
+const daesinRoutes = require('./routes/daesin'); // 대신택배 프록시
 
 
 const app = express();
@@ -24,6 +25,7 @@ app.use('/api/bootpay', bootpayRoutes);
 app.use('/api/encryption', encryptionRoutes);
 app.use('/api/nicepay', nicepayRoutes);
 app.use('/api/smartstore', smartstoreRoutes); // 스마트스토어 API 경로
+app.use('/api/daesin', daesinRoutes); // 대신택배 프록시
 
 
 
