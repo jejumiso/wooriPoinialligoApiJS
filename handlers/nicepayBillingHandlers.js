@@ -57,6 +57,7 @@ async function registBillingKey(req, res) {
     const { isRealServe, ...nicepayBody } = req.body
     const baseUrl = getNicepayBaseUrl(isRealServe)
     const url = `${baseUrl}/v1/subscribe/regist`
+    console.log(`[proxy] POST ${url} isRealServe=${isRealServe} body keys: ${Object.keys(nicepayBody).join(',')}`)
 
     const response = await axios.post(url, nicepayBody, {
       headers: {
@@ -66,8 +67,10 @@ async function registBillingKey(req, res) {
       timeout: NICEPAY_TIMEOUT_MS,
     })
 
+    console.log(`[proxy] registBillingKey response: ${JSON.stringify(response.data)}`)
     return sendSuccess(res, response.data)
   } catch (error) {
+    console.error(`[proxy] registBillingKey error:`, error.response?.status, JSON.stringify(error.response?.data))
     return sendError(res, error)
   }
 }
