@@ -118,7 +118,7 @@ router.post('/', async (req, res) => {
  *     - files: 업로드할 파일들
  *     - 기타 필드: 그대로 전달
  */
-router.post('/upload', upload.array('files', 10), async (req, res) => {
+router.post('/upload', upload.any(), async (req, res) => {
   if (!validateKey(req)) {
     return res.status(403).json({ error: '인증 실패' });
   }
