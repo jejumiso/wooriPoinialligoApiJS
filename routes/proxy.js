@@ -32,20 +32,10 @@ const upload = multer({
   limits: { fileSize: 20 * 1024 * 1024 }, // 20MB
 });
 
-const allowedDomains = [
-  'api.commerce.naver.com',    // 스마트스토어
-  'api-gateway.coupang.com',   // 쿠팡
-  'sa2.esmplus.com',           // ESM
-  'image1.coupangcdn.com',     // 쿠팡 CDN (이미지 업로드)
-];
-
-// 도메인 검증
-function validateDomain(targetUrl) {
+// URL 형식 검증 (모든 도메인 허용)
+function validateUrl(targetUrl) {
   try {
-    const url = new URL(targetUrl);
-    if (!allowedDomains.includes(url.hostname)) {
-      return '허용되지 않은 도메인입니다: ' + url.hostname;
-    }
+    new URL(targetUrl);
     return null;
   } catch {
     return '잘못된 URL입니다';
@@ -72,9 +62,9 @@ router.post('/', async (req, res) => {
     return res.status(400).json({ error: 'targetUrl은 필수입니다' });
   }
 
-  const domainError = validateDomain(targetUrl);
-  if (domainError) {
-    return res.status(403).json({ error: domainError });
+  const urlError = validateUrl(targetUrl);
+  if (urlError) {
+    return res.status(400).json({ error: urlError });
   }
 
   try {
@@ -129,9 +119,9 @@ router.post('/upload', upload.any(), async (req, res) => {
     return res.status(400).json({ error: 'targetUrl은 필수입니다' });
   }
 
-  const domainError = validateDomain(targetUrl);
-  if (domainError) {
-    return res.status(403).json({ error: domainError });
+  const urlError = validateUrl(targetUrl);
+  if (urlError) {
+    return res.status(400).json({ error: urlError });
   }
 
   try {
